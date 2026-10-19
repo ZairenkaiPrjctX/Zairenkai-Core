@@ -2,18 +2,31 @@
 
 > Owned by this repository. Document only what inspected code supports, citing file paths.
 
-## Status
+The full description is in `docs/architecture/TARGET_ARCHITECTURE.md`. This page is a summary.
 
-**Unknown.** No source code existed on 2026-10-18 (GitHub API 2026-10-18: repository size 0, no branches, no commits; ls-remote returned no refs.). There is no architecture
-to describe yet, and nothing here should be read as a design decision.
+| Path | Responsibility |
+|---|---|
+| `crates/zcore-domain/src/` | Typed contracts: `observation`, `device`, `capability`, `resource`, `request`, `decision`, `module`, `audit`, `protocol` |
+| `crates/zcore-engine/src/policy.rs` | Deny-by-default typed policy |
+| `crates/zcore-engine/src/arbitration.rs` | Leases, tiers, baselines |
+| `crates/zcore-engine/src/core.rs` | The pipeline and reconciliation |
+| `crates/zcore-engine/src/adapter.rs` | Adapter contract, fake adapter with fault injection |
+| `crates/zcore-platform/src/` | Discovery, telemetry, module inventory, FAS / battery saver adapters, AFID lookup, allowlisted runner |
+| `crates/zcored/src/` | Engine thread, tokio IPC server, lifecycle, watchdog, storage, CLI |
 
-## When the first code lands, fill in
+## Entry points
 
-1. **Overview:** one paragraph on what the system does, from the code's entry points.
-2. **Components:** table of directory/module → responsibility → evidence path.
-3. **Entry points:** binaries, scripts, services, module init functions.
-4. **Data flow:** inputs, outputs, formats, persistence.
-5. **External interfaces:** APIs, device/kernel interfaces, network endpoints, files consumed
-   or produced for other Zairenkai repositories (reference them; do not restate their specs).
-6. **Trust boundaries:** privilege levels, network exposure, secret usage.
-7. **Generated artifacts:** what is generated, by which command, and must not be hand-edited.
+- `zcored run|discover|ctl|check-config|default-config|bench|version`
+- `module/service.sh` (supervisor), `module/uninstall.sh`, `module/action.sh`
+
+## Trust boundaries
+
+- A root-only Unix socket. Principals come from SO_PEERCRED.
+- Config can only restrict policy.
+- Database records and module manifests are data.
+- Commands are allowlisted, and there is no shell.
+- Details: `docs/security/THREAT_MODEL.md`.
+
+## Generated artifacts
+
+`dist/` from `scripts/build-android.sh`. `module.prop` is generated from `module/module.prop.in`.

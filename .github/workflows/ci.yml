@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_STABLE: "1.97.0"
+  RUST_MSRV: "1.85.0"
+  NDK_VERSION: r27d
+  NDK_SHA256: 601246087a682d1944e1e16dd85bc6e49560fe8b6d61255be2829178c8ed15d9
+
+jobs:
+  test:
+    name: fmt, clippy, tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Toolchain
+        run: |
+          rustup toolchain install "$RUST_STABLE" --profile minimal -c rustfmt,clippy
+          rustup default "$RUST_STABLE"
+      - run: cargo fmt --all --check
+      - run: cargo clippy --locked --workspace --all-targets -- -D warnings
+      - run: cargo test --locked --workspace
+      - name: Hot-path benchmark (host, informational)
+        run: cargo run --locked -q --release -p zcored -- bench 5000
+      - name: Default configuration validates
+        run: |
+          cargo run --locked -q -p zcored -- default-config > /tmp/default.toml
+          cargo run --locked -q -p zcored -- check-config /tmp/default.toml
+
+  msrv:
+    name: MSRV
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: rustup toolchain install "$RUST_MSRV" --profile minimal
+      - run: cargo "+$RUST_MSRV" test --locked --workspace
+
+  scripts:
+    name: shellcheck
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: shellcheck -s sh module/*.sh module/META-INF/com/google/android/update-binary
+      - run: shellcheck scripts/*.sh
+
+  android:
+    name: Android arm64 module
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    needs: [test]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Toolchain
+        run: |
+          rustup toolchain install "$RUST_STABLE" --profile minimal -t aarch64-linux-android
+          rustup default "$RUST_STABLE"
+      - name: Android NDK (checksum verified)
+        run: |
+          curl -fsSL -o /tmp/ndk.zip "https://dl.google.com/android/repository/android-ndk-${NDK_VERSION}-linux.zip"
+          echo "${NDK_SHA256}  /tmp/ndk.zip" | sha256sum -c -
+          unzip -q /tmp/ndk.zip -d /tmp
+          rm /tmp/ndk.zip
+          echo "ANDROID_NDK_HOME=/tmp/android-ndk-${NDK_VERSION}" >> "$GITHUB_ENV"
+      - run: scripts/build-android.sh
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: zairenkai-core-module
+          path: dist/
+          if-no-files-found: error
+          retention-days: 14
