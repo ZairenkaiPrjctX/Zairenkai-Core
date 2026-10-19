@@ -52,7 +52,8 @@ These have never run on a phone:
 ## Not implemented (blocked or planned)
 
 - **ThermalTools, Graphics, ART, License Server, SDK and Intelligence Engine adapters.**
-  Their repositories are empty. The contracts are in `MODULES.md`.
+  Their repositories are empty, except ART, which has a read-only inspector on a topic branch
+  but no Core adapter. The contracts are in `MODULES.md`.
 - **Entitlement verification.** No licence server exists, and no feature is gated.
 - **Power HAL calls.** Deliberately not done: system_server owns the HAL.
 - **Kernel or sysfs writes.** Deliberately none in Core; they belong to the owning component

@@ -13,7 +13,7 @@
 | Zairenkai-ThermalTools | none | **Not available**: repository empty. Reported `not_installed`. |
 | Zairenkai-License-Server | none | **Not available**: repository empty. No feature is licence-gated. |
 | Zairenkai-Graphics-Platform | none | **Not available**: repository empty |
-| Zairenkai-ART | none | **Not available**: repository empty. Scope (Android Runtime vs. assets) is still unknown. |
+| Zairenkai-ART | none yet. Candidate input: `zart inspect` / `zart dexopt-status` JSON (`schema: 1`) | **No adapter.** Scope is Android Runtime. A read-only inspector exists on the ART topic branch `ccr-63f8aa87-1b0paj` (not merged; never run on a device). |
 | Zairenkai-Modules | Module manifest contract and inventory | Contract **implemented**; no modules exist |
 
 ## Module contract (`zairenkai-module.toml`)
