@@ -1,0 +1,21 @@
+#!/sbin/sh
+# Hands installation to Magisk's documented module installer (util_functions.sh /
+# install_module). KernelSU and APatch do not use this file.
+umask 022
+# install_module reads these.
+export OUTFD="$2"
+export ZIPFILE="$3"
+ui_print() { echo "$1"; }
+mount /data 2>/dev/null
+if [ ! -f /data/adb/magisk/util_functions.sh ]; then
+  ui_print "! Install this module from the Magisk, KernelSU or APatch app"
+  exit 1
+fi
+# shellcheck source=/dev/null
+. /data/adb/magisk/util_functions.sh
+if [ "${MAGISK_VER_CODE:-0}" -lt 20400 ]; then
+  ui_print "! Magisk v20.4 or newer is required"
+  exit 1
+fi
+install_module
+exit 0

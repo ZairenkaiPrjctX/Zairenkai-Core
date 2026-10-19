@@ -1,0 +1,6 @@
+id=zairenkai_core
+name=Zairenkai-Core
+version=v@VERSION@
+versionCode=@VERSION_CODE@
+author=ZairenkaiPrjctX
+description=Policy-driven control plane for the Zairenkai ecosystem: capability discovery, explainable decisions, verified changes, audit.
