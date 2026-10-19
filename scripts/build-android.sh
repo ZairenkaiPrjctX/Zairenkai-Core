@@ -13,6 +13,10 @@ LINKER="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linu
 
 export CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER="$LINKER"
 cargo build --locked --release --target aarch64-linux-android -p zcored
+# 16 KB page-size devices need 16 KB-aligned LOAD segments (.cargo/config.toml sets the flag).
+for align in $("$(dirname "$LINKER")/llvm-readelf" -lW target/aarch64-linux-android/release/zcored | awk '$1 == "LOAD" { print $NF }'); do
+  [ $((align)) -ge 16384 ] || { echo "zcored: LOAD segment aligned to $align, need 16 KB" >&2; exit 1; }
+done
 
 VERSION=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -n1)
 IFS=. read -r MAJ MIN PAT <<<"$VERSION"

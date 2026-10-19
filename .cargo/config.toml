@@ -1,0 +1,8 @@
+# 16 KB page-size devices (Android 15+) cannot load ELF files whose LOAD segments are only 4 KB
+# aligned. Link the 64-bit Android targets with a 16 KB maximum page size (also valid on 4 KB
+# devices). scripts/build-android.sh checks the result.
+[target.aarch64-linux-android]
+rustflags = ["-C", "link-arg=-Wl,-z,max-page-size=16384"]
+
+[target.x86_64-linux-android]
+rustflags = ["-C", "link-arg=-Wl,-z,max-page-size=16384"]
