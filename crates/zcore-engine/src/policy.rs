@@ -8,8 +8,9 @@
 //! 5. `builtin.thermal`            (safety)     no raising action at SEVERE or hotter; an
 //!    unknown thermal status blocks raising unless configured otherwise
 //! 6. `builtin.battery_critical`   (safety)     no raising action at critical battery, unplugged
-//! 7. `builtin.recommendation`     (adaptive)   recommendations need confidence and a role
-//! 8. configured rules             (thermal_power) restrict-only: deny or require
+//! 7. `builtin.battery_saver_while_charging` (safety) battery saver cannot change while plugged in
+//! 8. `builtin.recommendation`     (adaptive)   recommendations need confidence and a role
+//! 9. configured rules             (thermal_power) restrict-only: deny or require
 //!    confirmation
 //!
 //! Any Deny wins. Otherwise an unconfirmed NeedsConfirmation wins. Otherwise Allow.
@@ -247,6 +248,19 @@ impl PolicyEngine {
                         format!("battery {l}% and not charging"),
                     ));
                 }
+            }
+        }
+
+        // Android ignores battery saver changes while plugged in (PowerManagerService returns
+        // false when powered); refuse up front instead of reporting an unverifiable change.
+        if op.kind() == OperationKind::SetLowPowerMode && req.origin != Origin::Core {
+            if let Some(true) = tel.charging.fresh_value(inp.now_ms) {
+                rules.push(outcome(
+                    "builtin.battery_saver_while_charging",
+                    Safety,
+                    Deny,
+                    "Android does not change battery saver while the device is charging",
+                ));
             }
         }
 
