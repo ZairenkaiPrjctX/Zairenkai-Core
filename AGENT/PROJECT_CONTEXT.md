@@ -24,7 +24,7 @@
 | Discovery, telemetry, adapters (FAS, battery saver), AFID lookup, module inventory | `crates/zcore-platform` | Verified on fixtures. Evidence: 14 tests. **Unverified** on a device. |
 | Daemon and CLI | `crates/zcored` | Verified on the host. Evidence: 4 tests including an end-to-end socket test. **Unverified** on a device. |
 | Module packaging | `module/`, `scripts/build-android.sh`, `.cargo/config.toml` | Verified. Evidence: shellcheck clean; NDK r27d build with 16 KB-aligned LOAD segments (checked by the script), 2026-10-19 |
-| CI | `.github/workflows/ci.yml` | Verified locally. Evidence: actionlint clean 2026-10-19. **Unverified** on GitHub. |
+| CI | `.github/workflows/ci.yml` | Verified on GitHub. Evidence: Actions run 39528674638 (workflow_dispatch, 3562c7c), all 4 jobs green, 2026-10-21 |
 | Docs | `README.md`, `docs/` | Verified. Evidence: files present |
 
 ## Key facts
