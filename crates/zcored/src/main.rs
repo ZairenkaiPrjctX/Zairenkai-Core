@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 //! `zcored`: Zairenkai-Core daemon and CLI.
 
 mod daemon;

@@ -45,4 +45,5 @@ su -c '/data/adb/modules/zairenkai_core/bin/zcored ctl submit "{\"operation\":{\
 
 ## Licence
 
-Not chosen yet (see `docs/THIRD_PARTY.md`).
+Apache License 2.0; see [LICENSE](LICENSE) and [NOTICE](NOTICE). Dependencies and shared
+code are listed in [docs/THIRD_PARTY.md](docs/THIRD_PARTY.md).

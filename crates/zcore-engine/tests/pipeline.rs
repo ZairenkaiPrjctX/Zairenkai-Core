@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 //! End-to-end pipeline tests with the in-memory adapter and fault injection.
 
 use zcore_domain::audit::AuditKind;

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 //! Observed values with explicit availability, provenance and freshness.
 //!
 //! A value that could not be read is never replaced by a guess: it is carried as

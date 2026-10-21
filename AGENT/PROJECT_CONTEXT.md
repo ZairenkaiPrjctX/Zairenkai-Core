@@ -12,7 +12,7 @@
 | Visibility | private | Verified. Evidence: GitHub API |
 | Default branch | `dev` | Verified. Evidence: `git branch -a`, 2026-10-19 |
 | Purpose | Local control plane: capability discovery, policy decisions, arbitration, verified execution through adapters, audit | Verified. Evidence: `crates/`, `docs/architecture/TARGET_ARCHITECTURE.md` |
-| Licence | none chosen yet | Verified. Evidence: no `LICENSE` file |
+| Licence | Apache-2.0 (`LICENSE`, `NOTICE`, Cargo `license`, SPDX headers) | Verified. Evidence: maintainer decision 2026-10-21; `cargo metadata` reports Apache-2.0 for all crates |
 
 ## Contents
 
@@ -24,7 +24,7 @@
 | Discovery, telemetry, adapters (FAS, battery saver), AFID lookup, module inventory | `crates/zcore-platform` | Verified on fixtures. Evidence: 14 tests. **Unverified** on a device. |
 | Daemon and CLI | `crates/zcored` | Verified on the host. Evidence: 4 tests including an end-to-end socket test. **Unverified** on a device. |
 | Module packaging | `module/`, `scripts/build-android.sh`, `.cargo/config.toml` | Verified. Evidence: shellcheck clean; NDK r27d build with 16 KB-aligned LOAD segments (checked by the script), 2026-10-19 |
-| CI | `.github/workflows/ci.yml` | Verified locally. Evidence: actionlint clean 2026-10-19. **Unverified** on GitHub. |
+| CI | `.github/workflows/ci.yml` | Verified on GitHub. Evidence: Actions run 39528674638 (workflow_dispatch, 3562c7c), all 4 jobs green, 2026-10-21 |
 | Docs | `README.md`, `docs/` | Verified. Evidence: files present |
 
 ## Key facts
@@ -56,13 +56,17 @@
 - `Zairenkai-ART`: Android Runtime. A read-only inspector (`zart`) exists on its topic branch
   `ccr-63f8aa87-1b0paj`, not merged; Core has no ART adapter. Verified. Evidence: ART
   `crates/zart`, 2026-10-19.
-- ThermalTools, SDK, License-Server, Intelligence-Engine, Graphics-Platform, Modules and App
-  contained only agent foundation files on 2026-10-19. Evidence: `git ls-tree origin/dev`.
-  Their contracts are in `docs/MODULES.md`.
+- `Zairenkai-ThermalTools`: read-only diagnostics through `zthermal snapshot` (schema 1),
+  from a root-owned binary configured in `paths.thermaltools_binary`.
+  Verified. Evidence: `crates/zcore-platform/src/thermaltools.rs` tests (fakes, a generated zthermal 0.2.0 snapshot) and one host run of the real binary, 2026-10-21.
+  **Unverified** on a device.
+- SDK, License-Server, Intelligence-Engine, Graphics-Platform, Modules and App contained only
+  agent foundation files on 2026-10-19. Evidence: `git ls-tree origin/dev`. Their contracts
+  are in `docs/MODULES.md`.
 
 ## Open questions
 
-- Licence choice.
+- Should releases ship a generated third-party licence bundle (`docs/THIRD_PARTY.md`)?
 - Which transport should serve app clients: an abstract socket with SELinux policy, or Binder?
 - The License Server's entitlement format and offline policy.
 - Which devices to use for the first on-device validation.

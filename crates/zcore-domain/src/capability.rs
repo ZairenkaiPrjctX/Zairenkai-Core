@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 //! Capability descriptors: what can genuinely be observed or controlled on this device.
 
 use serde::{Deserialize, Serialize};

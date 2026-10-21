@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 //! Policy decisions, plans, results, leases and verification.
 
 use serde::{Deserialize, Serialize};

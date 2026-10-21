@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 //! Installed root-manager modules (Magisk / KernelSU / APatch share `/data/adb/modules`).
 //!
 //! Only `module.prop` key=value lines and the optional `zairenkai-module.toml` manifest are

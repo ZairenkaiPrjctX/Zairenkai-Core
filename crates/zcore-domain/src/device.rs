@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 //! Device context: identity and a telemetry snapshot. Every field is an [`Observation`].
 
 use serde::{Deserialize, Serialize};

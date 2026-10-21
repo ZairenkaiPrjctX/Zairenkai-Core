@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 //! The decision pipeline:
 //! validate → observe current value → evaluate policy → arbitrate → plan → (dry run) →
 //! execute through the owning adapter → verify by read-back → commit lease or roll back → audit.

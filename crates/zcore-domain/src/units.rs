@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 //! Bounded value types with explicit units.
 
 use serde::{Deserialize, Serialize};

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 //! Who is asking. Principals are derived by Core from transport credentials (peer uid), never
 //! from what a request claims about itself.
 

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 //! Persistent state: the lease table (atomic JSON) and an append-only audit log with size
 //! rotation. Stored state is never executed at startup; leases are only reconciled.
 

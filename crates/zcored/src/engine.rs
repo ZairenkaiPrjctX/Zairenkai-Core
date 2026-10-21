@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 //! The engine thread: owns [`Core`], the platform adapters and all device I/O.
 //!
 //! Everything that touches the device runs here, one message at a time, so operations on the
@@ -29,7 +31,7 @@ use zcore_platform::exec::Runner;
 use zcore_platform::fas::{FasAdapter, MODULE_ID as FAS_MODULE};
 use zcore_platform::power::LowPowerAdapter;
 use zcore_platform::sysroot::SysRoot;
-use zcore_platform::{discovery, modules, telemetry};
+use zcore_platform::{discovery, modules, telemetry, thermaltools};
 
 use crate::storage::{self, AuditSink};
 use crate::util::monotonic_ms;
@@ -61,6 +63,8 @@ pub struct EngineOptions {
 }
 
 /// First-party components without a released implementation are listed honestly.
+const THERMALTOOLS_MODULE: &str = "zairenkai_thermaltools";
+
 const NOT_YET_AVAILABLE: [(&str, &str); 7] = [
     ("zairenkai_thermaltools", "Zairenkai-ThermalTools"),
     ("zairenkai_sdk", "Zairenkai-SDK"),
@@ -176,6 +180,34 @@ impl Engine {
                 });
             }
         }
+        // ThermalTools has no module; it is reachable only through a configured binary.
+        let tt_bin = self.opts.config.paths.get(thermaltools::PATH_KEY).cloned();
+        let tt = thermaltools::run(
+            &p.root,
+            p.runner.as_ref(),
+            tt_bin.as_deref(),
+            thermaltools::Query::Snapshot,
+        );
+        for m in mods
+            .iter_mut()
+            .filter(|m| m.id == THERMALTOOLS_MODULE && m.health == ModuleHealth::NotInstalled)
+        {
+            match &tt {
+                Ok(r) => {
+                    m.health = ModuleHealth::Healthy;
+                    m.compatible = true;
+                    m.version = zcore_domain::module::Version::parse(&r.tool_version);
+                    m.detail = format!(
+                        "zthermal {} (snapshot schema {}): read-only diagnostics, no controls",
+                        r.tool_version, r.schema_version
+                    );
+                }
+                Err(e) => m.detail = format!("Zairenkai-ThermalTools: {e}"),
+            }
+        }
+        let tt_caps = thermaltools::capabilities(&tt, tt_bin.as_deref(), now);
+        self.core
+            .report_capabilities(thermaltools::OWNER, tt_caps, now);
         // The FAS module's health comes from its adapter.
         let fas_status = self
             .core

@@ -1,4 +1,6 @@
 #!/system/bin/sh
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 ZairenkaiPrjctX contributors
 # Install-time checks (sourced by the Magisk/KernelSU/APatch installer).
 [ "$ARCH" = "arm64" ] || abort "! Zairenkai-Core supports arm64 only (found $ARCH)"
 [ "$API" -ge 29 ] || abort "! Android 10 (API 29) or newer is required (found API $API)"

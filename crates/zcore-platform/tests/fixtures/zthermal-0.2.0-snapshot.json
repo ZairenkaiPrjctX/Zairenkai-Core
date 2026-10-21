@@ -1,0 +1,828 @@
+{
+ "schema_version": 1,
+ "tool_version": "0.2.0",
+ "generated_unix_ms": 0,
+ "root": "fixture",
+ "redacted": true,
+ "identity": {
+  "schema_version": 1,
+  "manufacturer": "Synthetic",
+  "brand": "synthetic",
+  "oem_family": {
+   "value": "other",
+   "confidence": "high",
+   "evidence": [
+    {
+     "source": "ro.product.manufacturer",
+     "value": "Synthetic",
+     "indicates": "Other"
+    },
+    {
+     "source": "ro.product.brand",
+     "value": "synthetic",
+     "indicates": "Other"
+    }
+   ],
+   "conflicts": []
+  },
+  "device": "synthqcom",
+  "model": "Synthetic Q",
+  "soc_vendor": {
+   "value": "qualcomm",
+   "confidence": "high",
+   "evidence": [
+    {
+     "source": "ro.soc.manufacturer",
+     "value": "QTI",
+     "indicates": "Qualcomm"
+    },
+    {
+     "source": "ro.soc.model",
+     "value": "SM8250",
+     "indicates": "Qualcomm"
+    },
+    {
+     "source": "ro.board.platform",
+     "value": "kona",
+     "indicates": "Qualcomm"
+    }
+   ],
+   "conflicts": []
+  },
+  "soc_model": "SM8250",
+  "board_platform": "kona",
+  "android_release": "13",
+  "sdk": 33,
+  "build_fingerprint": "redacted:sha256:1319fec65ffa",
+  "vendor_fingerprint": null,
+  "build_type": "user",
+  "kernel_release": "5.4.0-synthetic",
+  "arch": "x86_64",
+  "missing": [
+   "ro.product.vendor.manufacturer",
+   "ro.product.vendor.brand",
+   "ro.product.vendor.device",
+   "ro.product.name",
+   "ro.hardware",
+   "ro.hardware.chipname",
+   "ro.vendor.build.fingerprint",
+   "ro.vndk.version"
+  ]
+ },
+ "sources": [
+  {
+   "source": "getprop",
+   "status": "valid",
+   "detail": null
+  },
+  {
+   "source": "dumpsys",
+   "status": "unknown",
+   "detail": "not requested (--framework)"
+  }
+ ],
+ "summary": {
+  "zones": 5,
+  "zones_valid": 4,
+  "zones_invalid": 1,
+  "cooling_devices": 2,
+  "hottest_zone": {
+   "source": "/sys/class/thermal/thermal_zone1",
+   "name": "cpu-1-0-usr",
+   "millicelsius": 43200
+  },
+  "framework_status": null,
+  "battery_millicelsius": null
+ },
+ "sysfs": {
+  "thermal_class_present": true,
+  "zones": [
+   {
+    "path": "/sys/class/thermal/thermal_zone0",
+    "zone_type": {
+     "value": "tsens_tz_sensor1",
+     "status": "valid",
+     "detail": null
+    },
+    "classification": {
+     "category": "soc",
+     "rule": "name contains \"tsens\""
+    },
+    "temp": {
+     "raw": "41500",
+     "unit": "milli_celsius",
+     "millicelsius": 41500,
+     "status": "valid",
+     "reason": null
+    },
+    "temp_mode": {
+     "mode": "0644",
+     "owner_writable": true,
+     "world_readable": true
+    },
+    "mode": {
+     "value": "enabled",
+     "status": "valid",
+     "detail": null
+    },
+    "policy": {
+     "value": "step_wise",
+     "status": "valid",
+     "detail": null
+    },
+    "available_policies": {
+     "value": null,
+     "status": "unsupported",
+     "detail": "/sys/class/thermal/thermal_zone0/available_policies: No such file or directory (os error 2)"
+    },
+    "trips": [
+     {
+      "index": 0,
+      "kind": {
+       "value": "passive",
+       "status": "valid",
+       "detail": null
+      },
+      "temp": {
+       "raw": "95000",
+       "unit": "milli_celsius",
+       "millicelsius": 95000,
+       "status": "valid",
+       "reason": null
+      },
+      "hyst": {
+       "raw": "2000",
+       "unit": "milli_celsius",
+       "millicelsius": 2000,
+       "status": "valid",
+       "reason": null
+      }
+     },
+     {
+      "index": 1,
+      "kind": {
+       "value": "critical",
+       "status": "valid",
+       "detail": null
+      },
+      "temp": {
+       "raw": "115000",
+       "unit": "milli_celsius",
+       "millicelsius": 115000,
+       "status": "valid",
+       "reason": null
+      },
+      "hyst": {
+       "raw": "0",
+       "unit": "milli_celsius",
+       "millicelsius": 0,
+       "status": "valid",
+       "reason": null
+      }
+     }
+    ],
+    "bindings": []
+   },
+   {
+    "path": "/sys/class/thermal/thermal_zone1",
+    "zone_type": {
+     "value": "cpu-1-0-usr",
+     "status": "valid",
+     "detail": null
+    },
+    "classification": {
+     "category": "cpu",
+     "rule": "name contains \"cpu\""
+    },
+    "temp": {
+     "raw": "43200",
+     "unit": "milli_celsius",
+     "millicelsius": 43200,
+     "status": "valid",
+     "reason": null
+    },
+    "temp_mode": {
+     "mode": "0644",
+     "owner_writable": true,
+     "world_readable": true
+    },
+    "mode": {
+     "value": "enabled",
+     "status": "valid",
+     "detail": null
+    },
+    "policy": {
+     "value": "step_wise",
+     "status": "valid",
+     "detail": null
+    },
+    "available_policies": {
+     "value": null,
+     "status": "unsupported",
+     "detail": "/sys/class/thermal/thermal_zone1/available_policies: No such file or directory (os error 2)"
+    },
+    "trips": [],
+    "bindings": []
+   },
+   {
+    "path": "/sys/class/thermal/thermal_zone2",
+    "zone_type": {
+     "value": "skin-therm",
+     "status": "valid",
+     "detail": null
+    },
+    "classification": {
+     "category": "skin",
+     "rule": "name contains \"skin\""
+    },
+    "temp": {
+     "raw": "36100",
+     "unit": "milli_celsius",
+     "millicelsius": 36100,
+     "status": "valid",
+     "reason": null
+    },
+    "temp_mode": {
+     "mode": "0644",
+     "owner_writable": true,
+     "world_readable": true
+    },
+    "mode": {
+     "value": "enabled",
+     "status": "valid",
+     "detail": null
+    },
+    "policy": {
+     "value": "step_wise",
+     "status": "valid",
+     "detail": null
+    },
+    "available_policies": {
+     "value": null,
+     "status": "unsupported",
+     "detail": "/sys/class/thermal/thermal_zone2/available_policies: No such file or directory (os error 2)"
+    },
+    "trips": [
+     {
+      "index": 0,
+      "kind": {
+       "value": "passive",
+       "status": "valid",
+       "detail": null
+      },
+      "temp": {
+       "raw": "47000",
+       "unit": "milli_celsius",
+       "millicelsius": 47000,
+       "status": "valid",
+       "reason": null
+      },
+      "hyst": {
+       "raw": "1000",
+       "unit": "milli_celsius",
+       "millicelsius": 1000,
+       "status": "valid",
+       "reason": null
+      }
+     }
+    ],
+    "bindings": []
+   },
+   {
+    "path": "/sys/class/thermal/thermal_zone3",
+    "zone_type": {
+     "value": "battery",
+     "status": "valid",
+     "detail": null
+    },
+    "classification": {
+     "category": "battery",
+     "rule": "name contains \"battery\""
+    },
+    "temp": {
+     "raw": "30500",
+     "unit": "milli_celsius",
+     "millicelsius": 30500,
+     "status": "valid",
+     "reason": null
+    },
+    "temp_mode": {
+     "mode": "0644",
+     "owner_writable": true,
+     "world_readable": true
+    },
+    "mode": {
+     "value": "enabled",
+     "status": "valid",
+     "detail": null
+    },
+    "policy": {
+     "value": "step_wise",
+     "status": "valid",
+     "detail": null
+    },
+    "available_policies": {
+     "value": null,
+     "status": "unsupported",
+     "detail": "/sys/class/thermal/thermal_zone3/available_policies: No such file or directory (os error 2)"
+    },
+    "trips": [],
+    "bindings": []
+   },
+   {
+    "path": "/sys/class/thermal/thermal_zone4",
+    "zone_type": {
+     "value": "pa-therm0",
+     "status": "valid",
+     "detail": null
+    },
+    "classification": {
+     "category": "unknown",
+     "rule": null
+    },
+    "temp": {
+     "raw": null,
+     "unit": "milli_celsius",
+     "millicelsius": null,
+     "status": "unsupported",
+     "reason": "/sys/class/thermal/thermal_zone4/temp: No such file or directory (os error 2)"
+    },
+    "temp_mode": null,
+    "mode": {
+     "value": "enabled",
+     "status": "valid",
+     "detail": null
+    },
+    "policy": {
+     "value": "step_wise",
+     "status": "valid",
+     "detail": null
+    },
+    "available_policies": {
+     "value": null,
+     "status": "unsupported",
+     "detail": "/sys/class/thermal/thermal_zone4/available_policies: No such file or directory (os error 2)"
+    },
+    "trips": [],
+    "bindings": []
+   }
+  ],
+  "cooling_devices": [
+   {
+    "path": "/sys/class/thermal/cooling_device0",
+    "cdev_type": {
+     "value": "thermal-cpufreq-0",
+     "status": "valid",
+     "detail": null
+    },
+    "max_state": {
+     "value": "15",
+     "status": "valid",
+     "detail": null
+    },
+    "cur_state": {
+     "value": "0",
+     "status": "valid",
+     "detail": null
+    },
+    "cur_state_mode": {
+     "mode": "0644",
+     "owner_writable": true,
+     "world_readable": true
+    },
+    "total_trans": null,
+    "has_time_in_state": false
+   },
+   {
+    "path": "/sys/class/thermal/cooling_device1",
+    "cdev_type": {
+     "value": "battery",
+     "status": "valid",
+     "detail": null
+    },
+    "max_state": {
+     "value": "4",
+     "status": "valid",
+     "detail": null
+    },
+    "cur_state": {
+     "value": "1",
+     "status": "valid",
+     "detail": null
+    },
+    "cur_state_mode": {
+     "mode": "0644",
+     "owner_writable": true,
+     "world_readable": true
+    },
+    "total_trans": null,
+    "has_time_in_state": false
+   }
+  ],
+  "hwmon": [
+   {
+    "path": "/sys/class/hwmon/hwmon0",
+    "name": {
+     "value": "pm8150_tz",
+     "status": "valid",
+     "detail": null
+    },
+    "sensors": [
+     {
+      "input": "temp1_input",
+      "label": null,
+      "classification": {
+       "category": "unknown",
+       "rule": null
+      },
+      "temp": {
+       "raw": "38000",
+       "unit": "milli_celsius",
+       "millicelsius": 38000,
+       "status": "valid",
+       "reason": null
+      }
+     }
+    ]
+   }
+  ],
+  "truncated": false
+ },
+ "thermalservice": null,
+ "battery": null,
+ "adapters": [
+  {
+   "adapter": "generic",
+   "applies": true,
+   "evidence": [
+    "applies to every device"
+   ],
+   "services": {},
+   "candidate_services": {},
+   "config_files": [],
+   "capabilities": [
+    {
+     "id": "sensors.thermal_zones",
+     "description": "read temperatures from /sys/class/thermal/thermal_zone*/temp",
+     "scope": "Linux thermal sysfs",
+     "discovery": "list /sys/class/thermal",
+     "requires": "read access to sysfs (granted to apps on most builds; SELinux may deny)",
+     "privilege": "unprivileged",
+     "access": "read",
+     "state": "AVAILABLE_READ_ONLY",
+     "validation": "fixtures_only",
+     "evidence": [
+      "5 zones, 4 with a valid reading"
+     ],
+     "reason": null,
+     "hardware_tested": false,
+     "probe": null
+    },
+    {
+     "id": "sensors.trip_points",
+     "description": "read trip point types, temperatures and hysteresis (read only; never written)",
+     "scope": "Linux thermal sysfs",
+     "discovery": "trip_point_*_{type,temp,hyst}",
+     "requires": "read access to sysfs",
+     "privilege": "unprivileged",
+     "access": "read",
+     "state": "AVAILABLE_READ_ONLY",
+     "validation": "fixtures_only",
+     "evidence": [
+      "3 trip points"
+     ],
+     "reason": null,
+     "hardware_tested": false,
+     "probe": null
+    },
+    {
+     "id": "cooling.state_read",
+     "description": "read cooling device type, cur_state and max_state",
+     "scope": "Linux thermal sysfs",
+     "discovery": "list /sys/class/thermal/cooling_device*",
+     "requires": "read access to sysfs",
+     "privilege": "unprivileged",
+     "access": "read",
+     "state": "AVAILABLE_READ_ONLY",
+     "validation": "fixtures_only",
+     "evidence": [
+      "2 cooling devices"
+     ],
+     "reason": null,
+     "hardware_tested": false,
+     "probe": null
+    },
+    {
+     "id": "sensors.hwmon",
+     "description": "read hwmon temperature inputs",
+     "scope": "Linux hwmon",
+     "discovery": "list /sys/class/hwmon/hwmon*/temp*_input",
+     "requires": "read access to sysfs",
+     "privilege": "unprivileged",
+     "access": "read",
+     "state": "AVAILABLE_READ_ONLY",
+     "validation": "fixtures_only",
+     "evidence": [
+      "1 hwmon devices, 1 temperature inputs"
+     ],
+     "reason": null,
+     "hardware_tested": false,
+     "probe": null
+    },
+    {
+     "id": "framework.thermal_status",
+     "description": "Android thermal status, HAL temperatures and cooling devices",
+     "scope": "Android 10+",
+     "discovery": "dumpsys thermalservice",
+     "requires": "android.permission.DUMP (adb shell or root)",
+     "privilege": "shell",
+     "access": "read",
+     "state": "VALIDATION_REQUIRED",
+     "validation": "fixtures_only",
+     "evidence": [],
+     "reason": "not probed in this run (use --framework); needs the shell or root",
+     "hardware_tested": false,
+     "probe": null
+    },
+    {
+     "id": "framework.battery_temperature",
+     "description": "battery temperature from BatteryService",
+     "scope": "Android 10+",
+     "discovery": "dumpsys battery",
+     "requires": "android.permission.DUMP (adb shell or root)",
+     "privilege": "shell",
+     "access": "read",
+     "state": "VALIDATION_REQUIRED",
+     "validation": "fixtures_only",
+     "evidence": [],
+     "reason": "not probed in this run (use --framework); needs the shell or root",
+     "hardware_tested": false,
+     "probe": null
+    },
+    {
+     "id": "control.thermal_policy",
+     "description": "apply a thermal policy through validated, reversible controls",
+     "scope": "devices with a validated control descriptor",
+     "discovery": "validated control allowlist",
+     "requires": "root, a validated descriptor matching this device, a hardware test record",
+     "privilege": "root",
+     "access": "write",
+     "state": "UNSUPPORTED",
+     "validation": "fixtures_only",
+     "evidence": [],
+     "reason": "the validated control allowlist is empty in this release: no control has a hardware test record",
+     "hardware_tested": false,
+     "probe": null
+    }
+   ],
+   "notes": [
+    "controls are never derived from a writable node, a vendor name or root access"
+   ]
+  },
+  {
+   "adapter": "qualcomm",
+   "applies": true,
+   "evidence": [
+    "ro.soc.manufacturer = QTI",
+    "ro.soc.model = SM8250",
+    "ro.board.platform = kona",
+    "1 thermal-engine configuration files",
+    "2 zones use Qualcomm tsens names"
+   ],
+   "services": {},
+   "candidate_services": {
+    "thermal-engine": "running"
+   },
+   "config_files": [
+    {
+     "path": "/vendor/etc/thermal-engine.conf",
+     "status": "valid",
+     "detail": null,
+     "inspection": {
+      "schema_version": 1,
+      "path": "/vendor/etc/thermal-engine.conf",
+      "size": 385,
+      "sha256": "7c121f52113351c1b7aa41a57c07a15871c9c0acb722fdb224aa0a288b890092",
+      "detection": {
+       "format": "qcom_thermal_engine",
+       "reason": "[SECTION] headers with thermal-engine keys (algo_type, thresholds, set_point)",
+       "opaque": null
+      },
+      "summary": {
+       "lines": 19,
+       "sections": 2,
+       "algo_types": {
+        "monitor": 1,
+        "ss": 1
+       },
+       "globals": 1,
+       "comments": 1,
+       "unparsed_lines": 0,
+       "crlf_lines": 0,
+       "units": "values are kept as written; their unit depends on the sensor and is not normalized"
+      },
+      "findings": [],
+      "safety_facts": [
+       {
+        "location": "[SKIN-MONITOR]",
+        "description": "shutdown when skin-therm reaches 57000 (column 3)"
+       }
+      ],
+      "round_trip": {
+       "byte_exact": true,
+       "model_equal": true
+      }
+     }
+    }
+   ],
+   "capabilities": [
+    {
+     "id": "config.qcom_thermal_engine",
+     "description": "read, parse and validate the vendor thermal configuration (never written back)",
+     "scope": "Qualcomm devices with thermal-engine",
+     "discovery": "list /vendor/etc, /system/etc, /odm/etc for thermal-engine*.conf",
+     "requires": "read access to the file (usually world-readable under /vendor/etc)",
+     "privilege": "unprivileged",
+     "access": "read",
+     "state": "AVAILABLE_READ_ONLY",
+     "validation": "public_source",
+     "evidence": [
+      "/vendor/etc/thermal-engine.conf"
+     ],
+     "reason": null,
+     "hardware_tested": false,
+     "probe": null
+    }
+   ],
+   "notes": [
+    "thermal-engine syntax is not publicly documented; the parser follows published files"
+   ]
+  },
+  {
+   "adapter": "mediatek",
+   "applies": false,
+   "evidence": [],
+   "services": {},
+   "candidate_services": {
+    "thermal-engine": "running"
+   },
+   "config_files": [],
+   "capabilities": [],
+   "notes": []
+  },
+  {
+   "adapter": "pixel",
+   "applies": false,
+   "evidence": [],
+   "services": {},
+   "candidate_services": {
+    "thermal-engine": "running"
+   },
+   "config_files": [],
+   "capabilities": [],
+   "notes": []
+  },
+  {
+   "adapter": "xiaomi",
+   "applies": false,
+   "evidence": [],
+   "services": {},
+   "candidate_services": {},
+   "config_files": [],
+   "capabilities": [],
+   "notes": []
+  }
+ ],
+ "capabilities": [
+  {
+   "id": "sensors.thermal_zones",
+   "description": "read temperatures from /sys/class/thermal/thermal_zone*/temp",
+   "scope": "Linux thermal sysfs",
+   "discovery": "list /sys/class/thermal",
+   "requires": "read access to sysfs (granted to apps on most builds; SELinux may deny)",
+   "privilege": "unprivileged",
+   "access": "read",
+   "state": "AVAILABLE_READ_ONLY",
+   "validation": "fixtures_only",
+   "evidence": [
+    "5 zones, 4 with a valid reading"
+   ],
+   "reason": null,
+   "hardware_tested": false,
+   "probe": null
+  },
+  {
+   "id": "sensors.trip_points",
+   "description": "read trip point types, temperatures and hysteresis (read only; never written)",
+   "scope": "Linux thermal sysfs",
+   "discovery": "trip_point_*_{type,temp,hyst}",
+   "requires": "read access to sysfs",
+   "privilege": "unprivileged",
+   "access": "read",
+   "state": "AVAILABLE_READ_ONLY",
+   "validation": "fixtures_only",
+   "evidence": [
+    "3 trip points"
+   ],
+   "reason": null,
+   "hardware_tested": false,
+   "probe": null
+  },
+  {
+   "id": "cooling.state_read",
+   "description": "read cooling device type, cur_state and max_state",
+   "scope": "Linux thermal sysfs",
+   "discovery": "list /sys/class/thermal/cooling_device*",
+   "requires": "read access to sysfs",
+   "privilege": "unprivileged",
+   "access": "read",
+   "state": "AVAILABLE_READ_ONLY",
+   "validation": "fixtures_only",
+   "evidence": [
+    "2 cooling devices"
+   ],
+   "reason": null,
+   "hardware_tested": false,
+   "probe": null
+  },
+  {
+   "id": "sensors.hwmon",
+   "description": "read hwmon temperature inputs",
+   "scope": "Linux hwmon",
+   "discovery": "list /sys/class/hwmon/hwmon*/temp*_input",
+   "requires": "read access to sysfs",
+   "privilege": "unprivileged",
+   "access": "read",
+   "state": "AVAILABLE_READ_ONLY",
+   "validation": "fixtures_only",
+   "evidence": [
+    "1 hwmon devices, 1 temperature inputs"
+   ],
+   "reason": null,
+   "hardware_tested": false,
+   "probe": null
+  },
+  {
+   "id": "framework.thermal_status",
+   "description": "Android thermal status, HAL temperatures and cooling devices",
+   "scope": "Android 10+",
+   "discovery": "dumpsys thermalservice",
+   "requires": "android.permission.DUMP (adb shell or root)",
+   "privilege": "shell",
+   "access": "read",
+   "state": "VALIDATION_REQUIRED",
+   "validation": "fixtures_only",
+   "evidence": [],
+   "reason": "not probed in this run (use --framework); needs the shell or root",
+   "hardware_tested": false,
+   "probe": null
+  },
+  {
+   "id": "framework.battery_temperature",
+   "description": "battery temperature from BatteryService",
+   "scope": "Android 10+",
+   "discovery": "dumpsys battery",
+   "requires": "android.permission.DUMP (adb shell or root)",
+   "privilege": "shell",
+   "access": "read",
+   "state": "VALIDATION_REQUIRED",
+   "validation": "fixtures_only",
+   "evidence": [],
+   "reason": "not probed in this run (use --framework); needs the shell or root",
+   "hardware_tested": false,
+   "probe": null
+  },
+  {
+   "id": "control.thermal_policy",
+   "description": "apply a thermal policy through validated, reversible controls",
+   "scope": "devices with a validated control descriptor",
+   "discovery": "validated control allowlist",
+   "requires": "root, a validated descriptor matching this device, a hardware test record",
+   "privilege": "root",
+   "access": "write",
+   "state": "UNSUPPORTED",
+   "validation": "fixtures_only",
+   "evidence": [],
+   "reason": "the validated control allowlist is empty in this release: no control has a hardware test record",
+   "hardware_tested": false,
+   "probe": null
+  },
+  {
+   "id": "config.qcom_thermal_engine",
+   "description": "read, parse and validate the vendor thermal configuration (never written back)",
+   "scope": "Qualcomm devices with thermal-engine",
+   "discovery": "list /vendor/etc, /system/etc, /odm/etc for thermal-engine*.conf",
+   "requires": "read access to the file (usually world-readable under /vendor/etc)",
+   "privilege": "unprivileged",
+   "access": "read",
+   "state": "AVAILABLE_READ_ONLY",
+   "validation": "public_source",
+   "evidence": [
+    "/vendor/etc/thermal-engine.conf"
+   ],
+   "reason": null,
+   "hardware_tested": false,
+   "probe": null
+  }
+ ]
+}

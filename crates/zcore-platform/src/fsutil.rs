@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 // Shared with Zairenkai-FAS (same owner): crates/zfas-platform/src/fsutil.rs.
 //! Atomic file replacement for config, state and restore files.
 

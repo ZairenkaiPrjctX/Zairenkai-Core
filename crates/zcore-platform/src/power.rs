@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 //! Android battery saver adapter.
 //!
 //! Write: `cmd power set-mode <0|1>` (PowerManagerService shell command; sets the power save

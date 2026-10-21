@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 //! Device knowledge from a Zairenkai-Database-Source (AFID) catalog checkout.
 //!
 //! Records are *data*: they can describe a device but never grant a permission or enable an

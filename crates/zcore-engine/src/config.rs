@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 //! Core configuration (TOML, versioned, strict).
 //!
 //! Configuration can *grant* operations to principals and *add restrictions*. It cannot weaken
@@ -164,7 +166,12 @@ impl Default for CoreConfig {
     }
 }
 
-pub const KNOWN_PATHS: [&str; 3] = ["fas_socket", "afid_catalog", "modules_dir"];
+pub const KNOWN_PATHS: [&str; 4] = [
+    "fas_socket",
+    "afid_catalog",
+    "modules_dir",
+    "thermaltools_binary",
+];
 
 impl CoreConfig {
     pub fn parse(text: &str) -> Result<(Self, Vec<String>), String> {

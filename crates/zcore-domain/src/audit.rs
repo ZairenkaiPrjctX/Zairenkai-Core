@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 //! Audit events: what Core decided and did, with correlation ids. No secrets, no app data
 //! beyond package/uid identifiers needed to explain a decision.
 

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 //! Local IPC server (tokio). Authenticates peers by `SO_PEERCRED`, bounds request size, time,
 //! rate and concurrency, and forwards to the engine thread over a bounded queue.
 

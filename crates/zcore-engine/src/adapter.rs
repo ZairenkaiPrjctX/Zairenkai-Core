@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 //! Execution adapter contract.
 //!
 //! An adapter owns one or more resources and is the only code allowed to change them. It must:

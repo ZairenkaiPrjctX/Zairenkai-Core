@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 // Shared with Zairenkai-FAS (same owner): crates/zfas-platform/src/sysroot.rs.
 //! File-system root abstraction.
 //!
