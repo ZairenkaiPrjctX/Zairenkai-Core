@@ -374,7 +374,19 @@ mod tests {
             .as_array()
             .unwrap()
             .iter()
-            .any(|m| m["id"] == "zairenkai_thermaltools" && m["health"] == "not_installed"));
+            .any(|m| m["id"] == "zairenkai_thermaltools"
+                && m["health"] == "not_installed"
+                && m["detail"].as_str().unwrap().contains("not configured")));
+        // Without a configured zthermal binary the diagnostics capability is unsupported.
+        let caps = call(&sock, r#"{"v":1,"id":"k1","method":"capabilities"}"#);
+        let tt = caps["result"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|c| c["id"] == "thermaltools.diagnostics")
+            .unwrap()
+            .clone();
+        assert_eq!(tt["status"], "unsupported", "{tt}");
 
         stop_tx.send(true).unwrap();
         assert_eq!(h.join().unwrap(), 0);

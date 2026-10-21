@@ -15,7 +15,8 @@ Evidence: `git ls-files` and `git log --all`.
 |---|---|---|
 | Zairenkai-FAS | Rust workspace: `zfasd` daemon, Magisk/KernelSU module, root-only control socket (`status`/`enable`/`disable`/`profile`), `state.json`. Merged in PR #1. | Integrated: Core's `fas` adapter speaks its socket protocol. |
 | Zairenkai-Database-Source | AFID (Python): firmware metadata catalog. JSON records in `database/devices/<brand>/<codename>/device.json` (schema `device.schema.json`, `schema_version = "1.0"`). | Integrated read-only: device knowledge lookup, treated as data. The committed catalog has no verified devices yet. |
-| Zairenkai-ThermalTools, -SDK, -License-Server, -Intelligence-Engine, -Graphics-Platform, -ART, -Modules, -App | Agent foundation only (`git ls-tree origin/dev`) | No code to integrate. Core defines the contracts (protocol, module manifest, recommendation path) and reports these components as `not_installed`. |
+| Zairenkai-ThermalTools | `zthermal` CLI with a JSON snapshot contract (schema 1) | Read-only `thermaltools` adapter (`crates/zcore-platform/src/thermaltools.rs`); reported `not_installed` until `paths.thermaltools_binary` points to a root-owned binary. |
+| Zairenkai-SDK, -License-Server, -Intelligence-Engine, -Graphics-Platform, -ART, -Modules, -App | Agent foundation only (`git ls-tree origin/dev`) | No code to integrate. Core defines the contracts (protocol, module manifest, recommendation path) and reports these components as `not_installed`. |
 
 ## Gaps found and changes made outside this repository
 

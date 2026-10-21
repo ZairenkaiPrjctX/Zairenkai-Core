@@ -51,9 +51,11 @@ These have never run on a phone:
 
 ## Not implemented (blocked or planned)
 
-- **ThermalTools, Graphics, ART, License Server, SDK and Intelligence Engine adapters.**
-  Their repositories are empty, except ART, which has a read-only inspector on a topic branch
-  but no Core adapter. The contracts are in `MODULES.md`.
+- **Graphics, ART, License Server, SDK and Intelligence Engine adapters.** Their
+  repositories are empty, except ART, which has a read-only inspector but no Core adapter.
+  The contracts are in `MODULES.md`.
+- **ThermalTools controls.** Core reads ThermalTools diagnostics (`thermaltools.rs`) but
+  never asks it to change anything; ThermalTools has no validated write control.
 - **Entitlement verification.** No licence server exists, and no feature is gated.
 - **Power HAL calls.** Deliberately not done: system_server owns the HAL.
 - **Kernel or sysfs writes.** Deliberately none in Core; they belong to the owning component
@@ -66,4 +68,5 @@ These have never run on a phone:
 2. Measure idle CPU, RSS and wakeups (`dumpsys batterystats`, `/proc/<pid>/status`) over 1 h.
 3. Choose and validate the app transport (ADR-0005), then build the SDK client.
 4. Specify the License Server and its entitlement format before gating any feature.
-5. Add the first ThermalTools contract test once that repository has code.
+5. Run the ThermalTools adapter on a device with a root-owned `zthermal` and compare its
+   capabilities with `zthermal capabilities` run by hand.

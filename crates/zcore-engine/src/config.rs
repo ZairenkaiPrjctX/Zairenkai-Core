@@ -164,7 +164,12 @@ impl Default for CoreConfig {
     }
 }
 
-pub const KNOWN_PATHS: [&str; 3] = ["fas_socket", "afid_catalog", "modules_dir"];
+pub const KNOWN_PATHS: [&str; 4] = [
+    "fas_socket",
+    "afid_catalog",
+    "modules_dir",
+    "thermaltools_binary",
+];
 
 impl CoreConfig {
     pub fn parse(text: &str) -> Result<(Self, Vec<String>), String> {

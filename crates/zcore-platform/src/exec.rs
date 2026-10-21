@@ -12,6 +12,23 @@ pub const MAX_OUTPUT: usize = 1024 * 1024;
 /// Programs Core may run, and nothing else.
 pub const ALLOWED_PROGRAMS: [&str; 5] = ["getprop", "dumpsys", "cmd", "settings", "service"];
 
+/// Zairenkai component binaries Core may run by absolute path (from configuration). Their
+/// owning adapter checks file ownership and the subcommand before calling the runner.
+pub const ALLOWED_COMPONENTS: [&str; 1] = ["zthermal"];
+
+fn allowed_component(prog: &str) -> bool {
+    prog.starts_with('/')
+        && !prog.split('/').any(|c| c == ".." || c == ".")
+        && prog.len() <= 256
+        && prog
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || "._-/".contains(c))
+        && prog
+            .rsplit('/')
+            .next()
+            .is_some_and(|n| ALLOWED_COMPONENTS.contains(&n))
+}
+
 #[derive(Debug)]
 pub enum ExecError {
     NotAllowed(String),
@@ -45,7 +62,7 @@ pub fn check_argv(argv: &[&str]) -> Result<(), ExecError> {
     let (prog, args) = argv
         .split_first()
         .ok_or_else(|| ExecError::NotAllowed("empty argv".into()))?;
-    if !ALLOWED_PROGRAMS.contains(prog) {
+    if !ALLOWED_PROGRAMS.contains(prog) && !allowed_component(prog) {
         return Err(ExecError::NotAllowed(format!(
             "program {prog:?} is not on the allowlist"
         )));
@@ -171,6 +188,11 @@ mod tests {
         assert!(check_argv(&["settings", "get", "global", "low_power"]).is_ok());
         assert!(check_argv(&["sh", "-c", "id"]).is_err());
         assert!(check_argv(&["/system/bin/getprop"]).is_err());
+        assert!(check_argv(&["/data/adb/zairenkai/bin/zthermal", "snapshot"]).is_ok());
+        assert!(check_argv(&["zthermal", "snapshot"]).is_err());
+        assert!(check_argv(&["/data/../bin/zthermal", "snapshot"]).is_err());
+        assert!(check_argv(&["/data/adb/zthermalx", "snapshot"]).is_err());
+        assert!(check_argv(&["/data/adb/zthermal", "snapshot;id"]).is_err());
         assert!(check_argv(&["cmd", "power", "set-mode", "1;reboot"]).is_err());
         assert!(check_argv(&["settings", "get", "global", "$(id)"]).is_err());
         assert!(check_argv(&[]).is_err());

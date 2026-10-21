@@ -35,9 +35,9 @@ Non-negotiables in this repo:
 | Purpose | Command | Status |
 |---|---|---|
 | Build | `cargo build --workspace` | Verified. Evidence: 2026-10-19 |
-| Test | `cargo test --workspace` | Verified. Evidence: 57 passed, 2026-10-19 |
+| Test | `cargo test --workspace` | Verified. Evidence: 65 passed, 2026-10-21 |
 | Lint / format | `cargo clippy --workspace --all-targets -- -D warnings && cargo fmt --all --check` | Verified. Evidence: clean, 2026-10-19 |
-| MSRV | `cargo +1.85.0 test --workspace` | Verified. Evidence: passed, 2026-10-19 |
+| MSRV | `cargo +1.85.0 test --workspace` | Verified. Evidence: passed, 2026-10-21 |
 | Shell lint | `shellcheck -s sh module/*.sh module/META-INF/com/google/android/update-binary && shellcheck scripts/*.sh` | Verified. Evidence: clean (0.10.0), 2026-10-19 |
 | Android module | `ANDROID_NDK_HOME=<ndk> scripts/build-android.sh` | Verified. Evidence: NDK r27d, 2026-10-19 |
 | Benchmark | `cargo run --release -p zcored -- bench 20000` | Verified. Evidence: mean 2.1 µs/submit on host, 2026-10-19 |

@@ -34,6 +34,22 @@ No test touches the host's `/sys`, `/proc` or Android services. Platform code ru
 | `zcored.lock` | Single-instance lock |
 | `failed` | Present when the supervisor gave up |
 
+## Optional: ThermalTools diagnostics
+
+Core reports `thermaltools.diagnostics` and `thermaltools.sensors` when a `zthermal` binary
+is configured:
+
+```toml
+[paths]
+thermaltools_binary = "/data/adb/zairenkai/bin/zthermal"
+```
+
+The file must be named `zthermal`, executable, owned by root, and neither it nor any
+directory above it may be group- or world-writable (`/data/local/tmp` does not qualify).
+Core runs only `zthermal snapshot` (read-only, redacted), with a 15 s timeout and a 1 MiB
+output cap. Without the setting, or when a check fails, ThermalTools is reported as not
+installed and the reason is in `zcored ctl modules`.
+
 ## Diagnostics
 
 ```sh

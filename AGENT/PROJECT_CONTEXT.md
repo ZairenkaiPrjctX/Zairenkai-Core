@@ -56,9 +56,13 @@
 - `Zairenkai-ART`: Android Runtime. A read-only inspector (`zart`) exists on its topic branch
   `ccr-63f8aa87-1b0paj`, not merged; Core has no ART adapter. Verified. Evidence: ART
   `crates/zart`, 2026-10-19.
-- ThermalTools, SDK, License-Server, Intelligence-Engine, Graphics-Platform, Modules and App
-  contained only agent foundation files on 2026-10-19. Evidence: `git ls-tree origin/dev`.
-  Their contracts are in `docs/MODULES.md`.
+- `Zairenkai-ThermalTools`: read-only diagnostics through `zthermal snapshot` (schema 1),
+  from a root-owned binary configured in `paths.thermaltools_binary`.
+  Verified. Evidence: `crates/zcore-platform/src/thermaltools.rs` tests (fakes, a generated zthermal 0.2.0 snapshot) and one host run of the real binary, 2026-10-21.
+  **Unverified** on a device.
+- SDK, License-Server, Intelligence-Engine, Graphics-Platform, Modules and App contained only
+  agent foundation files on 2026-10-19. Evidence: `git ls-tree origin/dev`. Their contracts
+  are in `docs/MODULES.md`.
 
 ## Open questions
 

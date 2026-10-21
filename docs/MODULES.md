@@ -10,7 +10,7 @@
 | Zairenkai-Database-Source (AFID) | Read-only device lookup from a catalog copy at `paths.afid_catalog` (default `/data/adb/zairenkai-core/afid`) | **Implemented** (data only, never grants anything); no verified devices are in the catalog yet |
 | Zairenkai-Intelligence-Engine | Protocol method `recommend` and the principal role `intelligence_engine` | Contract **implemented**; no engine exists yet |
 | Zairenkai-SDK / Zairenkai-App | The protocol (`api/PROTOCOL.md`) is the contract | Contract defined; the SDK repository is empty; app transport per ADR-0005 |
-| Zairenkai-ThermalTools | none | **Not available**: repository empty. Reported `not_installed`. |
+| Zairenkai-ThermalTools | `thermaltools` adapter: runs `zthermal snapshot` from `paths.thermaltools_binary` (no default) and reads its JSON contract (`schema_version` 1). It owns `thermaltools.diagnostics` and `thermaltools.sensors`, both read-only. | **Implemented** (read-only diagnostics, no controls). Tested against fakes and a generated zthermal 0.2.0 snapshot, and run once on a Linux host against the real binary. Not run on a device. Reported `not_installed` until a root-owned binary is configured. |
 | Zairenkai-License-Server | none | **Not available**: repository empty. No feature is licence-gated. |
 | Zairenkai-Graphics-Platform | none | **Not available**: repository empty |
 | Zairenkai-ART | none yet. Candidate input: `zart inspect` / `zart dexopt-status` JSON (`schema: 1`) | **No adapter.** Scope is Android Runtime. A read-only inspector exists on the ART topic branch `ccr-63f8aa87-1b0paj` (not merged; never run on a device). |
@@ -60,8 +60,10 @@ permissions or bypasses policy.
 - Parse and validate vendor thermal configurations, and back up originals before any
   permitted change.
 - Never write trip points, thermal zone `mode` or `emul_temp`, and never disable throttling.
-- Thermal protection stays authoritative. Core will add a `thermal.*` adapter only when a
-  tested component exists.
+- Thermal protection stays authoritative. Core reads ThermalTools diagnostics only
+  (`crates/zcore-platform/src/thermaltools.rs`); it never sends `apply` or `rollback`, and
+  ThermalTools has no validated write control. A `thermal.*` control adapter would need a
+  hardware-tested component.
 
 **Graphics and ART.** These are capability reporting first. Optimizations go through typed
 operations and adapters, like everything else. ART work (dexopt, profile compilation) must use

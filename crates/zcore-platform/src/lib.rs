@@ -12,3 +12,4 @@ pub mod power;
 pub mod sysroot;
 pub mod telemetry;
 pub mod testutil;
+pub mod thermaltools;
