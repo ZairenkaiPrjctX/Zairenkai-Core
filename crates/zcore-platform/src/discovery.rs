@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 //! Device identity discovery. Evidence-based: every field records where it came from, and a
 //! missing source stays missing.
 

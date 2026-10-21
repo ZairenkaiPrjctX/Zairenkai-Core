@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 //! Deterministic, typed policy evaluation. Deny by default.
 //!
 //! Evaluation order (all rules are evaluated, so the explanation is complete):

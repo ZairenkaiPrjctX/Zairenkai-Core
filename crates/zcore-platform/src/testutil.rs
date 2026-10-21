@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 //! Test helpers: a self-deleting temporary directory and fixture writers.
 
 use std::fs;

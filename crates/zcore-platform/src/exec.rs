@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 //! Running Android shell tools with an executable allowlist, argument validation, a timeout
 //! and an output cap. There is no shell and no free-form command: every caller passes a fixed
 //! argv built from typed values.

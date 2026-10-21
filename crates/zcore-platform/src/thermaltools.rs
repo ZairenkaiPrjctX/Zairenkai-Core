@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 //! Zairenkai-ThermalTools: read-only thermal diagnostics from the `zthermal` CLI.
 //!
 //! Core runs `zthermal snapshot` (the JSON contract in ThermalTools `docs/INTEGRATION.md`,
@@ -27,7 +29,9 @@ use crate::sysroot::SysRoot;
 pub const PATH_KEY: &str = "thermaltools_binary";
 pub const BINARY_NAME: &str = "zthermal";
 pub const SUPPORTED_SCHEMA: u64 = 1;
-pub const TIMEOUT: Duration = Duration::from_secs(15);
+/// Runs on the engine thread, so it bounds how long a hung binary can delay IPC. A snapshot
+/// took 2-5 ms on a Linux host (fixtures and live, 2026-10-21); device timing is unmeasured.
+pub const TIMEOUT: Duration = Duration::from_secs(5);
 pub const OWNER: &str = "thermaltools";
 
 /// What Core may ask ThermalTools for. Every query is read-only.

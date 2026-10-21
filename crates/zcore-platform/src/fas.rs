@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 //! Adapter for Zairenkai-FAS (`zfasd`), over its local control socket.
 //!
 //! Contract (Zairenkai-FAS `docs/INTEGRATION.md`, socket protocol 1):

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 //! Daemon lifecycle: Starting → Ready (serving) → Stopping → Stopped.
 //!
 //! - single instance (flock on `zcored.lock`);

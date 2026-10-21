@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 //! Telemetry collection. Each value carries its source and freshness; failures are explicit.
 
 use std::time::Duration;

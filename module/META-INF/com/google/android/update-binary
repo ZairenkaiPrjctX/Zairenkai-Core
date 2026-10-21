@@ -1,4 +1,6 @@
 #!/sbin/sh
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 ZairenkaiPrjctX contributors
 # Hands installation to Magisk's documented module installer (util_functions.sh /
 # install_module). KernelSU and APatch do not use this file.
 umask 022

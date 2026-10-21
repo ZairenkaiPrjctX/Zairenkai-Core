@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 //! Module contract: what a Zairenkai component declares about itself.
 //!
 //! A manifest is a *declaration*. It never grants anything: permissions come only from Core's

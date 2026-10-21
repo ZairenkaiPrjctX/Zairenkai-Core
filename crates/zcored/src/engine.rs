@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 //! The engine thread: owns [`Core`], the platform adapters and all device I/O.
 //!
 //! Everything that touches the device runs here, one message at a time, so operations on the

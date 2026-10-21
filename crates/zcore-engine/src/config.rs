@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 //! Core configuration (TOML, versioned, strict).
 //!
 //! Configuration can *grant* operations to principals and *add restrictions*. It cannot weaken

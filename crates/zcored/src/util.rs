@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 //! Clock and process helpers.
 
 use std::os::unix::io::AsRawFd;

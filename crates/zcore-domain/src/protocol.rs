@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 //! Local IPC protocol, version 1: one JSON object per line over a Unix stream socket.
 //!
 //! Request:  `{"v":1,"id":"<correlation>","method":"submit","params":{...}}`

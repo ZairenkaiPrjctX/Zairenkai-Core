@@ -1,4 +1,6 @@
 #!/system/bin/sh
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 ZairenkaiPrjctX contributors
 # Supervise zcored: exponential backoff, and a start limit (5 starts in 10 minutes) after
 # which the supervisor gives up and leaves a marker instead of restart-looping.
 MODDIR=${0%/*}

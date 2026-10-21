@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 //! Zairenkai-Core canonical domain types and the local IPC protocol.
 //!
 //! Every other Core crate and every client (SDK, App, modules) uses these types; there is

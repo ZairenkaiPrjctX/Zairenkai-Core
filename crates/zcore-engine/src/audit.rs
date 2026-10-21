@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright 2026 ZairenkaiPrjctX contributors
 //! Bounded in-memory audit log with a drain for persistent sinks.
 
 use std::collections::VecDeque;

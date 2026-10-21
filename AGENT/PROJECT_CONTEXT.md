@@ -12,7 +12,7 @@
 | Visibility | private | Verified. Evidence: GitHub API |
 | Default branch | `dev` | Verified. Evidence: `git branch -a`, 2026-10-19 |
 | Purpose | Local control plane: capability discovery, policy decisions, arbitration, verified execution through adapters, audit | Verified. Evidence: `crates/`, `docs/architecture/TARGET_ARCHITECTURE.md` |
-| Licence | none chosen yet | Verified. Evidence: no `LICENSE` file |
+| Licence | Apache-2.0 (`LICENSE`, `NOTICE`, Cargo `license`, SPDX headers) | Verified. Evidence: maintainer decision 2026-10-21; `cargo metadata` reports Apache-2.0 for all crates |
 
 ## Contents
 
@@ -66,7 +66,7 @@
 
 ## Open questions
 
-- Licence choice.
+- Should releases ship a generated third-party licence bundle (`docs/THIRD_PARTY.md`)?
 - Which transport should serve app clients: an abstract socket with SELinux policy, or Binder?
 - The License Server's entitlement format and offline policy.
 - Which devices to use for the first on-device validation.
