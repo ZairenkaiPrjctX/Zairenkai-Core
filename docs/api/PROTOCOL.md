@@ -57,8 +57,10 @@ An `Observation` has these fields:
 ```
 
 The tuning operations are carried out by Zairenkai-Tuning's `ztune` (a separate GPL-3.0
-program in the module); the device must also advertise the value, which the capability
-evidence lists. `tuning_set_gpu_governor` to a higher-demand governor is a raising action
+program in the module). They are possible only when the capability is `read_write`, which
+requires ztune's `authorization.write_authorized` (an exact-device, `device_validated`
+profile granting that value); without one, both capabilities are `read_only` and a submit is
+rejected by the capability rule. No such profile exists yet. `tuning_set_gpu_governor` to a higher-demand governor is a raising action
 (thermal, battery and staleness rules apply); `performance` is risk `high`. The I/O scheduler
 is neutral.
 

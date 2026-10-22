@@ -55,7 +55,13 @@
       "evidence": [
         "/sys/block/sda/queue/scheduler",
         "/sys/block/sdb/queue/scheduler"
-      ]
+      ],
+      "authorization": {
+        "write_authorized": false,
+        "tier": "S",
+        "granted_values": [],
+        "reason": "no device_validated profile grants io.scheduler on this exact device/build: family Qualcomm identified; family matches never authorize writes; no device profile is installed"
+      }
     },
     {
       "id": "gpu.governor",
@@ -69,7 +75,13 @@
       "current": "msm-adreno-tz",
       "evidence": [
         "/sys/class/kgsl/kgsl-3d0/devfreq/governor"
-      ]
+      ],
+      "authorization": {
+        "write_authorized": false,
+        "tier": "S",
+        "granted_values": [],
+        "reason": "no device_validated profile grants gpu.governor on this exact device/build: family Qualcomm identified; family matches never authorize writes; no device profile is installed"
+      }
     }
   ]
 }

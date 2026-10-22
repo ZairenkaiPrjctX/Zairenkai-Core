@@ -7,14 +7,58 @@
     "version": "0.1.0"
   },
   "interval_ms": 200,
+  "soc": {
+    "family": "qualcomm",
+    "platform_id": "sm8250",
+    "matches": [
+      {
+        "family": "qualcomm",
+        "signal": "dt_compatible",
+        "raw": "qcom,sm8250",
+        "platform_id": "sm8250",
+        "listed_in_mainline": true,
+        "rule_source": "linux-mainline"
+      },
+      {
+        "family": "qualcomm",
+        "signal": "soc0_machine",
+        "raw": "SM8250",
+        "platform_id": "sm8250",
+        "listed_in_mainline": true,
+        "rule_source": "linux-mainline"
+      }
+    ],
+    "conflicts": [],
+    "labels": [
+      {
+        "label": "Snapdragon 865 series",
+        "source": "konabess"
+      }
+    ],
+    "observed": {
+      "dt_compatible": [
+        "qcom,kona-mtp",
+        "qcom,sm8250",
+        "qcom,kona"
+      ],
+      "dt_model": "Qualcomm Technologies, Inc. kona v2.1 SoC",
+      "soc0_family": "Snapdragon",
+      "soc0_machine": "SM8250",
+      "soc0_soc_id": "356",
+      "board_platform": "kona",
+      "soc_manufacturer": null,
+      "soc_model": null
+    }
+  },
   "platform": {
     "vendor": "qualcomm",
-    "qualcomm_score": 8,
+    "qualcomm_score": 10,
     "mediatek_score": 0,
     "signals": [
       "devicetree compatible: qcom (+3)",
       "/dev/kgsl-3d0 exists (+3)",
-      "/sys/class/kgsl exists (+2)"
+      "/sys/class/kgsl exists (+2)",
+      "/sys/devices/soc0 exists (+2)"
     ]
   },
   "cpu": {

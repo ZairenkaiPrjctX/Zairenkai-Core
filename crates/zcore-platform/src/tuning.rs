@@ -87,6 +87,14 @@ pub struct ToolCapability {
     pub allowed_values: Vec<String>,
     pub current: Option<String>,
     pub evidence: Vec<String>,
+    /// `authorization.write_authorized`: true only when an exact-device, device_validated
+    /// profile grants the control. Absent means false.
+    pub write_authorized: bool,
+    /// `authorization.granted_values`.
+    pub granted_values: Vec<String>,
+    pub tier: Option<String>,
+    pub profile_id: Option<String>,
+    pub authorization_reason: Option<String>,
 }
 
 /// The contract operation that controls `r`.
@@ -165,13 +173,29 @@ pub fn parse_capabilities(text: &str) -> Result<Vec<ToolCapability>, TuningError
             let id = c.get("id").and_then(Value::as_str);
             let state = c.get("state").and_then(Value::as_str);
             match (id, state) {
-                (Some(id), Some(state)) => Ok(ToolCapability {
-                    id: id.into(),
-                    state: state.into(),
-                    allowed_values: strings(c.get("allowed_values")),
-                    current: c.get("current").and_then(Value::as_str).map(str::to_string),
-                    evidence: strings(c.get("evidence")),
-                }),
+                (Some(id), Some(state)) => {
+                    let auth = c.get("authorization");
+                    let text = |k: &str| {
+                        auth.and_then(|a| a.get(k))
+                            .and_then(Value::as_str)
+                            .map(|s| s.chars().take(500).collect::<String>())
+                    };
+                    Ok(ToolCapability {
+                        id: id.into(),
+                        state: state.into(),
+                        allowed_values: strings(c.get("allowed_values")),
+                        current: c.get("current").and_then(Value::as_str).map(str::to_string),
+                        evidence: strings(c.get("evidence")),
+                        write_authorized: auth
+                            .and_then(|a| a.get("write_authorized"))
+                            .and_then(Value::as_bool)
+                            .unwrap_or(false),
+                        granted_values: strings(auth.and_then(|a| a.get("granted_values"))),
+                        tier: text("tier"),
+                        profile_id: text("profile_id"),
+                        authorization_reason: text("reason"),
+                    })
+                }
                 _ => Err(TuningError::Malformed(
                     "capability without id or state".into(),
                 )),
@@ -284,9 +308,11 @@ fn map_err(e: TuningError) -> AdapterError {
         TuningError::UnsafeBinary(_) => AdapterErrorCode::PermissionDenied,
         TuningError::Timeout => AdapterErrorCode::Timeout,
         TuningError::Command { code, .. } => match code.as_str() {
-            "invalid_value" | "refused" | "device_mismatch" | "confirmation_required" => {
-                AdapterErrorCode::Rejected
-            }
+            "invalid_value"
+            | "refused"
+            | "device_mismatch"
+            | "confirmation_required"
+            | "not_authorized" => AdapterErrorCode::Rejected,
             "unsupported" | "not_implemented" => AdapterErrorCode::Unsupported,
             "permission_denied" => AdapterErrorCode::PermissionDenied,
             "busy" => AdapterErrorCode::Unavailable,
@@ -356,26 +382,40 @@ impl Adapter for TuningAdapter {
                 ));
                 continue;
             };
+            // Writable only with an exact-device grant, and only for values Core models.
             let accepted: Vec<&str> = c
-                .allowed_values
+                .granted_values
                 .iter()
-                .filter(|v| parse_value(r, v).is_some())
+                .filter(|v| c.allowed_values.contains(v) && parse_value(r, v).is_some())
                 .map(String::as_str)
                 .collect();
             let status = match c.state.as_str() {
-                "not_verified" | "verified" if !accepted.is_empty() => CapabilityStatus::ReadWrite,
-                "not_verified" | "verified" | "unsupported" => CapabilityStatus::Unsupported,
+                "not_verified" | "verified" if c.write_authorized && !accepted.is_empty() => {
+                    CapabilityStatus::ReadWrite
+                }
+                // The node is there and readable, but no profile authorizes writing it.
+                "not_verified" | "verified" => CapabilityStatus::ReadOnly,
+                "unsupported" => CapabilityStatus::Unsupported,
                 "unavailable" => CapabilityStatus::TemporarilyUnavailable,
                 _ => CapabilityStatus::Unknown,
             };
             let mut evidence = vec![
                 format!("{} capabilities: {} is {}", self.binary, c.id, c.state),
+                format!(
+                    "write authorized: {} (tier {}, profile {})",
+                    c.write_authorized,
+                    c.tier.as_deref().unwrap_or("?"),
+                    c.profile_id.as_deref().unwrap_or("none")
+                ),
                 format!("device advertises: {}", c.allowed_values.join(" ")),
                 format!("Core accepts: {}", accepted.join(" ")),
             ];
+            if let Some(reason) = &c.authorization_reason {
+                evidence.push(reason.clone());
+            }
             evidence.extend(c.evidence.iter().take(8).cloned());
             let mut d = CapabilityDescriptor::new(r.capability(), status, OWNER, evidence, now_ms);
-            d.verified_on_device = c.state == "verified";
+            d.verified_on_device = c.state == "verified" && status == CapabilityStatus::ReadWrite;
             out.push(d);
         }
         let telemetry: Vec<&ToolCapability> = caps
@@ -468,10 +508,13 @@ mod tests {
 
     const BIN: &str = "/data/adb/modules/zairenkai/bin/ztune";
 
-    /// `ztune capabilities` from Zairenkai-Tuning 450a624 on its synthetic fixture
-    /// (`crates/ztune/tests/fixtures/synthetic-kona`), captured with the real binary.
+    /// `ztune capabilities` on Zairenkai-Tuning's synthetic fixture without profiles, captured
+    /// with the real binary (`tests/fixtures/tuning/SOURCE`): what every device gets today.
     const CAPS: &str = include_str!("../tests/fixtures/tuning/capabilities.json");
-    /// `ztune apply gpu.governor powersave` on the same fixture.
+    /// The same with Tuning's SYNTHETIC device_validated test profile.
+    const CAPS_GRANTED: &str =
+        include_str!("../tests/fixtures/tuning/capabilities-synthetic-profile.json");
+    /// `ztune apply gpu.governor powersave` with the synthetic profile.
     const APPLIED: &str = include_str!("../tests/fixtures/tuning/apply-gpu-governor.json");
     /// `ztune telemetry --interval-ms 200` on the same fixture.
     const TELEMETRY: &str = include_str!("../tests/fixtures/tuning/telemetry.json");
@@ -502,9 +545,25 @@ mod tests {
     }
 
     #[test]
-    fn discovers_read_write_capabilities_from_the_contract() {
+    fn without_a_device_profile_the_controls_are_read_only() {
         let d = install();
         let r = Arc::new(FakeRunner::default().with(&format!("{BIN} capabilities"), CAPS));
+        let caps = adapter(&d, r).discover(1);
+        for id in ["tuning.io_scheduler", "tuning.gpu_governor"] {
+            let c = caps.iter().find(|c| c.id == id).unwrap();
+            assert_eq!(c.status, CapabilityStatus::ReadOnly, "{id}");
+            assert!(!c.verified_on_device);
+            assert!(c
+                .evidence
+                .iter()
+                .any(|e| e.starts_with("write authorized: false (tier S")));
+        }
+    }
+
+    #[test]
+    fn discovers_read_write_capabilities_from_the_contract() {
+        let d = install();
+        let r = Arc::new(FakeRunner::default().with(&format!("{BIN} capabilities"), CAPS_GRANTED));
         let caps = adapter(&d, r).discover(1);
         let io = caps.iter().find(|c| c.id == "tuning.io_scheduler").unwrap();
         assert_eq!(io.status, CapabilityStatus::ReadWrite);
@@ -515,6 +574,11 @@ mod tests {
             .any(|e| e == "Core accepts: mq-deadline kyber none"));
         let gpu = caps.iter().find(|c| c.id == "tuning.gpu_governor").unwrap();
         assert_eq!(gpu.status, CapabilityStatus::ReadWrite);
+        // Only the granted values, not every value the node advertises.
+        assert!(gpu
+            .evidence
+            .iter()
+            .any(|e| e == "Core accepts: msm-adreno-tz powersave"));
         let tele = caps.iter().find(|c| c.id == "tuning.telemetry").unwrap();
         assert_eq!(tele.status, CapabilityStatus::ReadOnly);
     }
@@ -566,6 +630,17 @@ mod tests {
             .unwrap_err();
         assert_eq!(e.code, AdapterErrorCode::Rejected);
         assert!(e.message.contains("not advertised"));
+        r.set(
+            &format!("{BIN} apply gpu.governor performance"),
+            Err("ztune: not_authorized: tier S: no device_validated profile".into()),
+        );
+        let e = a
+            .apply(
+                ResourceId::GpuGovernor,
+                ResourceValue::GpuGovernor(GpuGovernor::Performance),
+            )
+            .unwrap_err();
+        assert_eq!(e.code, AdapterErrorCode::Rejected);
         r.set(
             &format!("{BIN} apply io.scheduler kyber"),
             Err("ztune: permission_denied: writing /sys/block/sda/queue/scheduler".into()),

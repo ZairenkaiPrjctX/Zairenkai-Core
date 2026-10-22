@@ -9,7 +9,7 @@
 |---|---|---|
 | Repository | `ZairenkaiPrjctX/Zairenkai-Core` | Verified. Evidence: GitHub API |
 | GitHub description | Core Zairenkai | Verified. Evidence: GitHub API |
-| Visibility | private | Verified. Evidence: GitHub API |
+| Visibility | public | Verified. Evidence: `list_repos`, 2026-10-22 (was private until made public; earlier entries said private) |
 | Default branch | `dev` | Verified. Evidence: `git branch -a`, 2026-10-19 |
 | Purpose | Local control plane: capability discovery, policy decisions, arbitration, verified execution through adapters, audit | Verified. Evidence: `crates/`, `docs/architecture/TARGET_ARCHITECTURE.md` |
 | Licence | Apache-2.0 (`LICENSE`, `NOTICE`, Cargo `license`, SPDX headers) | Verified. Evidence: maintainer decision 2026-10-21; `cargo metadata` reports Apache-2.0 for all crates |
@@ -58,7 +58,8 @@
   `ccr-63f8aa87-1b0paj`, not merged; Core has no ART adapter. Verified. Evidence: ART
   `crates/zart`, 2026-10-19.
 - `Zairenkai-Tuning` (GPL-3.0): `tuning` adapter runs `ztune capabilities|telemetry|apply` and
-  owns `tuning.io_scheduler`, `tuning.gpu_governor`; separate process, no shared code.
+  owns `tuning.io_scheduler`, `tuning.gpu_governor` (read-only unless ztune reports an
+  exact-device write authorization); separate process, no shared code.
   Verified. Evidence: `crates/zcore-platform/src/tuning.rs` tests against captured documents,
   pipeline test `tuning_operations_go_through_policy_and_read_back`, 2026-10-22. **Unverified**
   on a device.

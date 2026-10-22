@@ -49,7 +49,8 @@ The same ownership rules as for `zthermal` apply (named `ztune`, root-owned, not
 world-writable up to `/`). Core runs only `ztune capabilities`, `ztune telemetry
 --interval-ms 200` and `ztune apply <io.scheduler|gpu.governor> <value>`, each with a 5 s
 timeout and a 1 MiB output cap. It never runs `ztune restore` or `ztune gpu-table`. Without the
-binary the two controls are `unsupported` and `health` stays `ready`.
+binary the two controls are `unsupported` and `health` stays `ready`. With the binary but no
+exact-device profile (every device today) they are `read_only`.
 
 `ztune` is GPL-3.0 and a separate program: Core links none of its code and only reads its
 documented JSON contract (Zairenkai-Tuning `docs/LICENSING.md`).
