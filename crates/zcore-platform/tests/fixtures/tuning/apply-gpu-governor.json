@@ -1,0 +1,28 @@
+{
+  "schema": "zairenkai.tuning",
+  "schema_version": 1,
+  "kind": "operation",
+  "component": {
+    "name": "zairenkai-tuning",
+    "version": "0.1.0"
+  },
+  "request": {
+    "op": "gpu.governor",
+    "value": "powersave",
+    "dry_run": false,
+    "status": "accepted"
+  },
+  "operation": {
+    "status": "applied_verified",
+    "targets": [
+      {
+        "target": "gpu",
+        "path": "/sys/class/kgsl/kgsl-3d0/devfreq/governor",
+        "before": "msm-adreno-tz",
+        "requested": "powersave",
+        "actual": "powersave",
+        "outcome": "written"
+      }
+    ]
+  }
+}

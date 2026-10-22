@@ -19,7 +19,7 @@ PowerManagerService.
 | 4 Policy and decision | `zcore-engine::policy` | Deny by default. Compiled safety rules, plus configured restrict-only rules. Every evaluated rule is in the decision. |
 | 5 Planner and arbitration | `zcore-engine::core` (plan), `zcore-engine::arbitration` (leases) | One lease per resource, tiered priority, baselines kept for rollback. |
 | 6 Execution adapters | `zcore-engine::adapter` (contract, fake), `zcore-platform::{fas,power}` | Typed values only; the allowlisted runner has no shell. |
-| 7 Runtime and lifecycle | `crates/zcored` | Engine thread, tokio IPC, watchdog, single-instance lock, persisted leases, rotating audit log. `module/service.sh` adds backoff and a start limit. |
+| 7 Runtime and lifecycle | `crates/zcored` | Engine thread, tokio IPC, watchdog, single-instance lock, persisted leases, rotating audit log. The `service.sh` of the zairenkai module (Zairenkai-Modules) adds backoff and a start limit. |
 
 ## Decision lifecycle (prompt §7), as implemented in `Core::submit`
 

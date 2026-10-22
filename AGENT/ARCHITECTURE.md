@@ -17,7 +17,8 @@ The full description is in `docs/architecture/TARGET_ARCHITECTURE.md`. This page
 ## Entry points
 
 - `zcored run|discover|ctl|check-config|default-config|bench|version`
-- `module/service.sh` (supervisor), `module/uninstall.sh`, `module/action.sh`
+- The root-module scripts (supervisor, uninstall, action) live in Zairenkai-Modules, which
+  packages `zcored` into the single `zairenkai` module.
 
 ## Trust boundaries
 
@@ -29,4 +30,5 @@ The full description is in `docs/architecture/TARGET_ARCHITECTURE.md`. This page
 
 ## Generated artifacts
 
-`dist/` from `scripts/build-android.sh`. `module.prop` is generated from `module/module.prop.in`.
+`dist/zairenkai-core/` from `scripts/build-android.sh`: `bin/zcored`, `LICENSE`, `NOTICE`,
+`THIRD_PARTY.md` and `component.json` (version, commit, SHA-256 of each file).

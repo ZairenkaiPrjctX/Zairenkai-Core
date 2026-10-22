@@ -1,0 +1,4 @@
+Captured from ZairenkaiPrjctX/Zairenkai-Tuning 0c226b27771c0e0274feb6435b36c8d90487a814 on its synthetic fixture tree
+by scripts/capture-tuning-contract.sh. Do not edit by hand.
+*-synthetic-profile.json and apply-gpu-governor.json use the SYNTHETIC test profile
+(crates/ztune/tests/fixtures/profiles); no device record authorizes them.

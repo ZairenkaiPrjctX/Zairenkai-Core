@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::sysroot::SysRoot;
 
-pub const DEFAULT_CATALOG: &str = "/data/adb/zairenkai-core/afid";
+pub const DEFAULT_CATALOG: &str = "/data/adb/zairenkai/core/afid";
 const MAX_RECORD: u64 = 256 * 1024;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

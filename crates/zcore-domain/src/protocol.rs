@@ -29,6 +29,9 @@ pub enum Method {
     Capabilities,
     Context,
     Modules,
+    /// The latest Zairenkai-Tuning telemetry document (`zairenkai.tuning` schema 1), as
+    /// `ztune` printed it after Core validated its envelope.
+    Tuning,
     Leases,
     Policy,
     Audit {

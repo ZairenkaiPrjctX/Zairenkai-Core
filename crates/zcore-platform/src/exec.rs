@@ -16,7 +16,7 @@ pub const ALLOWED_PROGRAMS: [&str; 5] = ["getprop", "dumpsys", "cmd", "settings"
 
 /// Zairenkai component binaries Core may run by absolute path (from configuration). Their
 /// owning adapter checks file ownership and the subcommand before calling the runner.
-pub const ALLOWED_COMPONENTS: [&str; 1] = ["zthermal"];
+pub const ALLOWED_COMPONENTS: [&str; 2] = ["zthermal", "ztune"];
 
 fn allowed_component(prog: &str) -> bool {
     prog.starts_with('/')
@@ -192,6 +192,20 @@ mod tests {
         assert!(check_argv(&["/system/bin/getprop"]).is_err());
         assert!(check_argv(&["/data/adb/zairenkai/bin/zthermal", "snapshot"]).is_ok());
         assert!(check_argv(&["zthermal", "snapshot"]).is_err());
+        assert!(check_argv(&[
+            "/data/adb/modules/zairenkai/bin/ztune",
+            "apply",
+            "io.scheduler",
+            "mq-deadline"
+        ])
+        .is_ok());
+        assert!(check_argv(&[
+            "/data/adb/modules/zairenkai/bin/ztune",
+            "apply",
+            "io.scheduler",
+            "a b"
+        ])
+        .is_err());
         assert!(check_argv(&["/data/../bin/zthermal", "snapshot"]).is_err());
         assert!(check_argv(&["/data/adb/zthermalx", "snapshot"]).is_err());
         assert!(check_argv(&["/data/adb/zthermal", "snapshot;id"]).is_err());

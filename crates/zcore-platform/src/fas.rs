@@ -22,8 +22,17 @@ use zcore_domain::device::FasState;
 use zcore_domain::resource::{FasProfile, ResourceId, ResourceValue};
 use zcore_engine::adapter::{Adapter, AdapterError, AdapterErrorCode};
 
-pub const DEFAULT_SOCKET: &str = "/data/adb/zairenkai-fas/zfasd.sock";
-pub const MODULE_ID: &str = "zairenkai_fas";
+pub const DEFAULT_SOCKET: &str = "/data/adb/zairenkai/fas/zfasd.sock";
+/// zfasd inside the unified `zairenkai` module, relative to the module directory.
+pub const MODULE_BINARY: &str = "bin/zfasd";
+
+/// Path whose presence means zfasd is packaged in the installed `zairenkai` module.
+pub fn module_marker(modules_dir: &str) -> String {
+    format!(
+        "{modules_dir}/{}/{MODULE_BINARY}",
+        crate::modules::UNIFIED_ID
+    )
+}
 
 pub struct FasAdapter {
     socket: PathBuf,
@@ -141,13 +150,17 @@ impl Adapter for FasAdapter {
             Err(e) if (self.module_installed)() => (
                 CapabilityStatus::TemporarilyUnavailable,
                 format!(
-                    "module {MODULE_ID} installed but zfasd unreachable: {}",
+                    "zfasd installed in module {} but unreachable: {}",
+                    crate::modules::UNIFIED_ID,
                     e.message
                 ),
             ),
             Err(_) => (
                 CapabilityStatus::Unsupported,
-                format!("module {MODULE_ID} not installed"),
+                format!(
+                    "zfasd not installed (module {} has no {MODULE_BINARY})",
+                    crate::modules::UNIFIED_ID
+                ),
             ),
         };
         ["fas.profile", "fas.enabled"]

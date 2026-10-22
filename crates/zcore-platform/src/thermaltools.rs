@@ -15,13 +15,13 @@
 //! Nothing here can change a thermal setting: ThermalTools itself never writes in this
 //! release, and Core never asks it to.
 
-use std::os::unix::fs::MetadataExt;
 use std::time::Duration;
 
 use serde::Serialize;
 use serde_json::Value;
 use zcore_domain::capability::{CapabilityDescriptor, CapabilityStatus};
 
+use crate::component::{self, BinaryError};
 use crate::exec::{ExecError, Runner, MAX_OUTPUT};
 use crate::sysroot::SysRoot;
 
@@ -133,49 +133,10 @@ pub struct ThermalToolsReport {
 /// Checks the configured path before anything runs. `owner_uid` is the uid every path
 /// component must belong to: 0 in production (Core runs as root).
 pub fn check_binary(root: &SysRoot, path: &str, owner_uid: u32) -> Result<(), ThermalToolsError> {
-    let unsafe_ = |m: String| Err(ThermalToolsError::UnsafeBinary(m));
-    if !path.starts_with('/') || path.split('/').any(|c| c == ".." || c == ".") {
-        return unsafe_(format!("{path:?} is not an absolute path without . or .."));
-    }
-    if path.rsplit('/').next() != Some(BINARY_NAME) {
-        return unsafe_(format!("{path:?} is not named {BINARY_NAME}"));
-    }
-    let local = root.path(path);
-    let meta = match std::fs::symlink_metadata(&local) {
-        Ok(m) => m,
-        Err(e) => return Err(ThermalToolsError::NotInstalled(format!("{path}: {e}"))),
-    };
-    if !meta.file_type().is_file() {
-        return Err(ThermalToolsError::NotInstalled(format!(
-            "{path} is not a regular file"
-        )));
-    }
-    if meta.mode() & 0o111 == 0 {
-        return Err(ThermalToolsError::NotInstalled(format!(
-            "{path} is not executable"
-        )));
-    }
-    // The file and every directory above it must be root-owned and not writable by others.
-    let mut p = Some(local.as_path());
-    while let Some(cur) = p {
-        let m = std::fs::metadata(cur)
-            .map_err(|e| ThermalToolsError::NotInstalled(format!("{}: {e}", cur.display())))?;
-        if m.uid() != owner_uid {
-            return unsafe_(format!(
-                "{} is owned by uid {}, not {owner_uid}",
-                cur.display(),
-                m.uid()
-            ));
-        }
-        if m.mode() & 0o022 != 0 {
-            return unsafe_(format!("{} is writable by group or others", cur.display()));
-        }
-        if cur == root.path("/") {
-            break;
-        }
-        p = cur.parent();
-    }
-    Ok(())
+    component::check_binary(root, path, BINARY_NAME, owner_uid).map_err(|e| match e {
+        BinaryError::NotInstalled(m) => ThermalToolsError::NotInstalled(m),
+        BinaryError::Unsafe(m) => ThermalToolsError::UnsafeBinary(m),
+    })
 }
 
 fn field<'a>(v: &'a Value, key: &str) -> Result<&'a Value, ThermalToolsError> {

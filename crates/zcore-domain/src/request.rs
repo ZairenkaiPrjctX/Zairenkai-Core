@@ -5,15 +5,29 @@
 use serde::{Deserialize, Serialize};
 
 use crate::principal::Principal;
-use crate::resource::{FasProfile, ResourceId, ResourceValue};
+use crate::resource::{FasProfile, GpuGovernor, IoScheduler, ResourceId, ResourceValue};
 
 /// The typed operations Core can perform. There is no free-form command operation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(tag = "op", rename_all = "snake_case")]
 pub enum Operation {
-    FasSetProfile { profile: FasProfile },
-    FasSetEnabled { enabled: bool },
-    SetLowPowerMode { enabled: bool },
+    FasSetProfile {
+        profile: FasProfile,
+    },
+    FasSetEnabled {
+        enabled: bool,
+    },
+    SetLowPowerMode {
+        enabled: bool,
+    },
+    /// Zairenkai-Tuning `io.scheduler`.
+    TuningSetIoScheduler {
+        scheduler: IoScheduler,
+    },
+    /// Zairenkai-Tuning `gpu.governor`.
+    TuningSetGpuGovernor {
+        governor: GpuGovernor,
+    },
 }
 
 /// Operation kinds, the unit of permission grants.
@@ -23,13 +37,17 @@ pub enum OperationKind {
     FasSetProfile,
     FasSetEnabled,
     SetLowPowerMode,
+    TuningSetIoScheduler,
+    TuningSetGpuGovernor,
 }
 
 impl OperationKind {
-    pub const ALL: [OperationKind; 3] = [
+    pub const ALL: [OperationKind; 5] = [
         OperationKind::FasSetProfile,
         OperationKind::FasSetEnabled,
         OperationKind::SetLowPowerMode,
+        OperationKind::TuningSetIoScheduler,
+        OperationKind::TuningSetGpuGovernor,
     ];
 }
 
@@ -58,6 +76,8 @@ impl Operation {
             Operation::FasSetProfile { .. } => OperationKind::FasSetProfile,
             Operation::FasSetEnabled { .. } => OperationKind::FasSetEnabled,
             Operation::SetLowPowerMode { .. } => OperationKind::SetLowPowerMode,
+            Operation::TuningSetIoScheduler { .. } => OperationKind::TuningSetIoScheduler,
+            Operation::TuningSetGpuGovernor { .. } => OperationKind::TuningSetGpuGovernor,
         }
     }
 
@@ -66,6 +86,8 @@ impl Operation {
             Operation::FasSetProfile { .. } => ResourceId::FasProfile,
             Operation::FasSetEnabled { .. } => ResourceId::FasEnabled,
             Operation::SetLowPowerMode { .. } => ResourceId::LowPowerMode,
+            Operation::TuningSetIoScheduler { .. } => ResourceId::IoScheduler,
+            Operation::TuningSetGpuGovernor { .. } => ResourceId::GpuGovernor,
         }
     }
 
@@ -75,6 +97,8 @@ impl Operation {
             Operation::FasSetEnabled { enabled } | Operation::SetLowPowerMode { enabled } => {
                 ResourceValue::Bool(enabled)
             }
+            Operation::TuningSetIoScheduler { scheduler } => ResourceValue::IoScheduler(scheduler),
+            Operation::TuningSetGpuGovernor { governor } => ResourceValue::GpuGovernor(governor),
         }
     }
 
@@ -89,6 +113,12 @@ impl Operation {
             }
             (ResourceId::LowPowerMode, ResourceValue::Bool(enabled)) => {
                 Operation::SetLowPowerMode { enabled }
+            }
+            (ResourceId::IoScheduler, ResourceValue::IoScheduler(scheduler)) => {
+                Operation::TuningSetIoScheduler { scheduler }
+            }
+            (ResourceId::GpuGovernor, ResourceValue::GpuGovernor(governor)) => {
+                Operation::TuningSetGpuGovernor { governor }
             }
             _ => return None,
         })
@@ -127,6 +157,23 @@ impl Operation {
                     Direction::Raise
                 }
             }
+            // An I/O scheduler orders requests; it does not raise clocks.
+            (Operation::TuningSetIoScheduler { .. }, _) => Direction::Neutral,
+            (
+                Operation::TuningSetGpuGovernor { governor },
+                Some(ResourceValue::GpuGovernor(cur)),
+            ) => match governor.intensity().cmp(&cur.intensity()) {
+                std::cmp::Ordering::Greater => Direction::Raise,
+                std::cmp::Ordering::Less => Direction::Lower,
+                std::cmp::Ordering::Equal => Direction::Neutral,
+            },
+            (Operation::TuningSetGpuGovernor { governor }, _) => {
+                if governor == GpuGovernor::Powersave {
+                    Direction::Lower
+                } else {
+                    Direction::Raise
+                }
+            }
         }
     }
 
@@ -135,6 +182,12 @@ impl Operation {
             Operation::FasSetProfile { profile } if profile.intensity() >= 2 => RiskClass::Medium,
             Operation::FasSetEnabled { enabled: true } => RiskClass::Medium,
             Operation::SetLowPowerMode { enabled: false } => RiskClass::Medium,
+            Operation::TuningSetGpuGovernor {
+                governor: GpuGovernor::Performance,
+            } => RiskClass::High,
+            Operation::TuningSetIoScheduler { .. } | Operation::TuningSetGpuGovernor { .. } => {
+                RiskClass::Medium
+            }
             _ => RiskClass::Low,
         }
     }
@@ -261,6 +314,8 @@ mod tests {
         for r in ResourceId::ALL {
             let v = match r {
                 ResourceId::FasProfile => ResourceValue::FasProfile(FasProfile::Balanced),
+                ResourceId::IoScheduler => ResourceValue::IoScheduler(IoScheduler::Kyber),
+                ResourceId::GpuGovernor => ResourceValue::GpuGovernor(GpuGovernor::Powersave),
                 _ => ResourceValue::Bool(true),
             };
             let op = Operation::set(r, v).unwrap();
@@ -268,5 +323,30 @@ mod tests {
             assert_eq!(op.target(), v);
         }
         assert!(Operation::set(ResourceId::FasProfile, ResourceValue::Bool(true)).is_none());
+    }
+
+    #[test]
+    fn tuning_directions_and_wire_format() {
+        let g = |governor| Operation::TuningSetGpuGovernor { governor };
+        let cur = Some(ResourceValue::GpuGovernor(GpuGovernor::MsmAdrenoTz));
+        assert_eq!(g(GpuGovernor::Performance).direction(cur), Direction::Raise);
+        assert_eq!(g(GpuGovernor::Powersave).direction(cur), Direction::Lower);
+        assert_eq!(
+            g(GpuGovernor::SimpleOndemand).direction(cur),
+            Direction::Neutral
+        );
+        assert_eq!(
+            g(GpuGovernor::MsmAdrenoTz).direction(None),
+            Direction::Raise
+        );
+        assert_eq!(g(GpuGovernor::Performance).risk(), RiskClass::High);
+        let io = Operation::TuningSetIoScheduler {
+            scheduler: IoScheduler::Kyber,
+        };
+        assert_eq!(io.direction(None), Direction::Neutral);
+        assert_eq!(
+            serde_json::to_value(io).unwrap(),
+            serde_json::json!({"op": "tuning_set_io_scheduler", "scheduler": "kyber"})
+        );
     }
 }

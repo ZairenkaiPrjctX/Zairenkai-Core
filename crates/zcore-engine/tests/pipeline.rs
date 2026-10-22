@@ -446,3 +446,70 @@ fn unreadable_resource_is_not_changed() {
     assert!(plan.rollback.is_none());
     assert!(plan.preconditions.iter().any(|p| p.contains("unreadable")));
 }
+
+#[test]
+fn tuning_operations_go_through_policy_and_read_back() {
+    use zcore_domain::resource::{GpuGovernor, IoScheduler};
+    let tz = ResourceValue::GpuGovernor(GpuGovernor::MsmAdrenoTz);
+    let fake = FakeAdapter::new(
+        "tuning",
+        &[
+            (ResourceId::GpuGovernor, tz),
+            (
+                ResourceId::IoScheduler,
+                ResourceValue::IoScheduler(IoScheduler::MqDeadline),
+            ),
+        ],
+    );
+    let handle = fake.handle();
+    let mut c = Core::new(CoreConfig::default(), vec![Box::new(fake)]);
+    c.refresh_capabilities(0);
+    c.set_context(ctx(1_000, ThermalStatus::Severe));
+    let gov = |governor| Operation::TuningSetGpuGovernor { governor };
+
+    // Raising the GPU governor is a performance-raising action: refused when hot.
+    let r = c.submit(
+        req(
+            "t1",
+            Principal::Root,
+            Origin::User,
+            gov(GpuGovernor::Performance),
+            None,
+        ),
+        1_000,
+    );
+    assert_eq!(r.outcome, ActionOutcome::Rejected, "{}", r.message);
+    assert_eq!(handle.lock().unwrap().applies, 0);
+
+    // Lowering is allowed, applied and verified by read-back.
+    let r = c.submit(
+        req(
+            "t2",
+            Principal::Root,
+            Origin::User,
+            gov(GpuGovernor::Powersave),
+            None,
+        ),
+        1_000,
+    );
+    assert_eq!(r.outcome, ActionOutcome::Applied, "{}", r.message);
+    assert!(r.verification.as_ref().unwrap().matched);
+    assert_eq!(
+        r.plan.as_ref().unwrap().rollback.as_ref().unwrap().restore,
+        tz
+    );
+
+    // The scheduler is neutral, so it is not blocked by the thermal rule.
+    let io = Operation::TuningSetIoScheduler {
+        scheduler: IoScheduler::Kyber,
+    };
+    let r = c.submit(req("t3", Principal::Root, Origin::User, io, None), 1_000);
+    assert_eq!(r.outcome, ActionOutcome::Applied, "{}", r.message);
+
+    // An app needs an explicit grant.
+    let r = c.submit(
+        req("t4", Principal::App(10234), Origin::User, io, None),
+        1_000,
+    );
+    assert_eq!(r.outcome, ActionOutcome::Rejected, "{}", r.message);
+}

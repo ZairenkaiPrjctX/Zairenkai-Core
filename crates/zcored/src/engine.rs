@@ -23,14 +23,16 @@ use zcore_domain::observation::{Availability, Observation};
 use zcore_domain::principal::Principal;
 use zcore_domain::protocol::{ErrorCode, Method, Request, Response};
 use zcore_domain::request::{ActionRequest, Origin};
+use zcore_domain::resource::ResourceId;
 use zcore_engine::adapter::Adapter;
 use zcore_engine::config::CoreConfig;
 use zcore_engine::Core;
 use zcore_platform::afid::{self, Lookup};
 use zcore_platform::exec::Runner;
-use zcore_platform::fas::{FasAdapter, MODULE_ID as FAS_MODULE};
+use zcore_platform::fas::{self, FasAdapter};
 use zcore_platform::power::LowPowerAdapter;
 use zcore_platform::sysroot::SysRoot;
+use zcore_platform::tuning::{self, TuningAdapter};
 use zcore_platform::{discovery, modules, telemetry, thermaltools};
 
 use crate::storage::{self, AuditSink};
@@ -65,20 +67,24 @@ pub struct EngineOptions {
 /// First-party components without a released implementation are listed honestly.
 const THERMALTOOLS_MODULE: &str = "zairenkai_thermaltools";
 
-const NOT_YET_AVAILABLE: [(&str, &str); 7] = [
+const NOT_YET_AVAILABLE: [(&str, &str); 6] = [
     ("zairenkai_thermaltools", "Zairenkai-ThermalTools"),
     ("zairenkai_sdk", "Zairenkai-SDK"),
     ("zairenkai_license_server", "Zairenkai-License-Server"),
     ("zairenkai_intelligence", "Zairenkai-Intelligence-Engine"),
     ("zairenkai_graphics", "Zairenkai-Graphics-Platform"),
     ("zairenkai_art", "Zairenkai-ART"),
-    ("zairenkai_modules", "Zairenkai-Modules"),
 ];
+
+/// Separate modules that the unified `zairenkai` module replaces.
+const SUPERSEDED: [&str; 2] = ["zairenkai_core", "zairenkai_fas"];
 
 struct Engine {
     core: Core,
     opts: EngineOptions,
     fas_probe: FasAdapter,
+    /// Reads `ztune telemetry`; the adapter Core owns handles the resources.
+    tuning_probe: TuningAdapter,
     knowledge: Lookup,
     started_ms: u64,
     sink: AuditSink,
@@ -93,9 +99,17 @@ fn modules_dir(cfg: &CoreConfig) -> String {
     cfg.path("modules_dir", modules::MODULES_DIR)
 }
 
+fn tuning_adapter(p: &Platform, cfg: &CoreConfig) -> TuningAdapter {
+    TuningAdapter::new(
+        p.root.clone(),
+        p.runner.clone(),
+        cfg.paths.get(tuning::PATH_KEY).map(String::as_str),
+    )
+}
+
 fn fas_adapter(p: &Platform, cfg: &CoreConfig) -> FasAdapter {
     let root = p.root.clone();
-    let marker = format!("{}/{FAS_MODULE}", modules_dir(cfg));
+    let marker = fas::module_marker(&modules_dir(cfg));
     FasAdapter::new(
         p.root.path(fas_socket(cfg)),
         Box::new(move || root.exists(&marker)),
@@ -111,6 +125,7 @@ impl Engine {
         let adapters: Vec<Box<dyn Adapter>> = vec![
             Box::new(fas_adapter(&p, &opts.config)),
             Box::new(LowPowerAdapter::new(p.runner.clone(), api)),
+            Box::new(tuning_adapter(&p, &opts.config)),
         ];
         let mut core = Core::new(opts.config.clone(), adapters);
         let mut ctx = DeviceContext::unknown();
@@ -119,6 +134,7 @@ impl Engine {
         let sink = AuditSink::new(opts.dir.join("audit.jsonl"));
         let mut e = Engine {
             fas_probe: fas_adapter(&p, &opts.config),
+            tuning_probe: tuning_adapter(&p, &opts.config),
             core,
             knowledge: Lookup::NoCatalog,
             started_ms: now,
@@ -164,7 +180,34 @@ impl Engine {
         let p = &self.opts.platform;
         let hal = discovery::power_hal_capability(p.runner.as_ref(), now);
         self.core.report_capabilities("discovery", vec![hal], now);
-        let mut mods = modules::inventory(&p.root, &modules_dir(&self.opts.config));
+        let dir = modules_dir(&self.opts.config);
+        let mut mods = modules::inventory(&p.root, &dir);
+        if !mods.iter().any(|m| m.id == modules::UNIFIED_ID) {
+            mods.push(ModuleDescriptor {
+                id: modules::UNIFIED_ID.into(),
+                version: None,
+                compatible: false,
+                health: ModuleHealth::NotInstalled,
+                detail: format!(
+                    "Zairenkai-Modules: module {} is not installed in {dir}",
+                    modules::UNIFIED_ID
+                ),
+                requested_permissions: vec![],
+                owns: vec![],
+            });
+        }
+        for m in mods
+            .iter_mut()
+            .filter(|m| SUPERSEDED.contains(&m.id.as_str()))
+        {
+            if m.health != ModuleHealth::Disabled {
+                m.health = ModuleHealth::Degraded;
+            }
+            m.detail = format!(
+                "superseded by the {} module; remove it in the root manager",
+                modules::UNIFIED_ID
+            );
+        }
         for (id, name) in NOT_YET_AVAILABLE {
             if !mods.iter().any(|m| m.id == id) {
                 mods.push(ModuleDescriptor {
@@ -208,22 +251,30 @@ impl Engine {
         let tt_caps = thermaltools::capabilities(&tt, tt_bin.as_deref(), now);
         self.core
             .report_capabilities(thermaltools::OWNER, tt_caps, now);
-        // The FAS module's health comes from its adapter.
+        // The unified module: zcored is this process, so it answers; with zfasd packaged, the
+        // module is healthy only while the FAS adapter can control zfasd.
         let fas_status = self
             .core
             .capabilities()
             .into_iter()
             .find(|c| c.id == "fas.profile")
             .map(|c| c.status);
-        for m in mods
-            .iter_mut()
-            .filter(|m| m.id == FAS_MODULE && m.health != ModuleHealth::Disabled)
-        {
-            m.health = match fas_status {
-                Some(CapabilityStatus::ReadWrite) => ModuleHealth::Healthy,
-                Some(CapabilityStatus::ReadOnly) => ModuleHealth::Degraded,
-                _ => ModuleHealth::Unreachable,
+        let fas_packaged = p.root.exists(fas::module_marker(&dir));
+        for m in mods.iter_mut().filter(|m| {
+            m.id == modules::UNIFIED_ID && m.compatible && m.health != ModuleHealth::Disabled
+        }) {
+            let (health, fas) = match (fas_packaged, fas_status) {
+                (false, _) => (ModuleHealth::Healthy, "zfasd not packaged".to_string()),
+                (true, Some(CapabilityStatus::ReadWrite)) => {
+                    (ModuleHealth::Healthy, "zfasd controllable".to_string())
+                }
+                (true, s) => (
+                    ModuleHealth::Degraded,
+                    format!("zfasd packaged but not controllable ({s:?})"),
+                ),
             };
+            m.health = health;
+            m.detail = format!("zcored answering; {fas}");
         }
         self.core.set_modules(mods);
         let id = &self.core.context().identity;
@@ -308,7 +359,12 @@ impl Engine {
             reasons.push(format!("device context is {age} ms old"));
         }
         for (r, st) in self.core.controllable() {
-            if st != CapabilityStatus::ReadWrite {
+            // Tuning targets are optional hardware: a device without a GPU devfreq node or a
+            // selectable I/O scheduler is not degraded, it just lacks that control.
+            let optional = matches!(r, ResourceId::IoScheduler | ResourceId::GpuGovernor);
+            if st != CapabilityStatus::ReadWrite
+                && !(optional && st == CapabilityStatus::Unsupported)
+            {
                 reasons.push(format!("{} is {st:?}", r.as_str()));
             }
         }
@@ -356,6 +412,14 @@ impl Engine {
                 json!({ "context": self.core.context(), "knowledge": self.knowledge }),
             ),
             Method::Modules => Response::ok(&req.id, to_json(&self.core.modules().to_vec())),
+            Method::Tuning => match self.tuning_probe.telemetry() {
+                Ok(doc) => Response::ok(&req.id, doc),
+                Err(e) => Response::err(
+                    &req.id,
+                    ErrorCode::NotFound,
+                    format!("Zairenkai-Tuning telemetry: {e}"),
+                ),
+            },
             Method::Leases => Response::ok(&req.id, to_json(&self.core.leases().all().to_vec())),
             Method::Policy => {
                 let c = self.core.policy().config();

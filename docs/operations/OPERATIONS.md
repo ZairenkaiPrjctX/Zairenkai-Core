@@ -7,8 +7,8 @@
 | Tests (unit, fault injection, end-to-end socket) | `cargo test --workspace` |
 | Lint | `cargo clippy --workspace --all-targets -- -D warnings && cargo fmt --all --check` |
 | MSRV | `cargo +1.85.0 test --workspace` |
-| Shell | `shellcheck -s sh module/*.sh module/META-INF/com/google/android/update-binary && shellcheck scripts/*.sh` |
-| Android module | `ANDROID_NDK_HOME=<ndk r27d> scripts/build-android.sh` → `dist/zairenkai-core-v<ver>.zip` |
+| Shell | `shellcheck scripts/*.sh` |
+| Android component | `ANDROID_NDK_HOME=<ndk r27d> scripts/build-android.sh` → `dist/zairenkai-core/` (packaged by Zairenkai-Modules) |
 | Hot-path cost (host) | `cargo run --release -p zcored -- bench 20000` |
 
 No test touches the host's `/sys`, `/proc` or Android services. Platform code runs against
@@ -16,13 +16,14 @@ No test touches the host's `/sys`, `/proc` or Android services. Platform code ru
 
 ## Install
 
-1. Flash the zip in Magisk, KernelSU or APatch. Requirements: arm64, API 29 or newer.
+1. Install the `zairenkai` module zip from Zairenkai-Modules in Magisk, KernelSU or APatch.
+   Requirements: arm64, API 29 or newer.
 2. Reboot. `service.sh` waits for boot completion, then supervises `zcored run`:
    - backoff from 5 s up to 300 s;
-   - after 5 starts in 10 minutes it gives up and writes `/data/adb/zairenkai-core/failed`.
-3. Start with the read-only report: `su -c /data/adb/modules/zairenkai_core/bin/zcored discover`.
+   - after 5 starts in 10 minutes it gives up and writes `/data/adb/zairenkai/core/failed`.
+3. Start with the read-only report: `su -c /data/adb/modules/zairenkai/bin/zcored discover`.
 
-## Files (`/data/adb/zairenkai-core`, mode 0700)
+## Files (`/data/adb/zairenkai/core`, mode 0700)
 
 | File | Content |
 |---|---|
@@ -33,6 +34,26 @@ No test touches the host's `/sys`, `/proc` or Android services. Platform code ru
 | `zcored.log` | stderr, rotated at 512 KiB by `service.sh` |
 | `zcored.lock` | Single-instance lock |
 | `failed` | Present when the supervisor gave up |
+
+## Zairenkai-Tuning (I/O scheduler, GPU governor, telemetry)
+
+The unified module installs `ztune` at `/data/adb/modules/zairenkai/bin/ztune`, which Core
+uses by default. Another location can be configured:
+
+```toml
+[paths]
+tuning_binary = "/data/adb/modules/zairenkai/bin/ztune"
+```
+
+The same ownership rules as for `zthermal` apply (named `ztune`, root-owned, not group- or
+world-writable up to `/`). Core runs only `ztune capabilities`, `ztune telemetry
+--interval-ms 200` and `ztune apply <io.scheduler|gpu.governor> <value>`, each with a 5 s
+timeout and a 1 MiB output cap. It never runs `ztune restore` or `ztune gpu-table`. Without the
+binary the two controls are `unsupported` and `health` stays `ready`. With the binary but no
+exact-device profile (every device today) they are `read_only`.
+
+`ztune` is GPL-3.0 and a separate program: Core links none of its code and only reads its
+documented JSON contract (Zairenkai-Tuning `docs/LICENSING.md`).
 
 ## Optional: ThermalTools diagnostics
 

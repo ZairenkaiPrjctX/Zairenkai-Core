@@ -9,7 +9,7 @@
 |---|---|---|
 | Repository | `ZairenkaiPrjctX/Zairenkai-Core` | Verified. Evidence: GitHub API |
 | GitHub description | Core Zairenkai | Verified. Evidence: GitHub API |
-| Visibility | private | Verified. Evidence: GitHub API |
+| Visibility | public | Verified. Evidence: `list_repos`, 2026-10-22 (was private until made public; earlier entries said private) |
 | Default branch | `dev` | Verified. Evidence: `git branch -a`, 2026-10-19 |
 | Purpose | Local control plane: capability discovery, policy decisions, arbitration, verified execution through adapters, audit | Verified. Evidence: `crates/`, `docs/architecture/TARGET_ARCHITECTURE.md` |
 | Licence | Apache-2.0 (`LICENSE`, `NOTICE`, Cargo `license`, SPDX headers) | Verified. Evidence: maintainer decision 2026-10-21; `cargo metadata` reports Apache-2.0 for all crates |
@@ -23,14 +23,15 @@
 | Decision engine (no I/O) | `crates/zcore-engine` | Verified. Evidence: 14 unit + 16 pipeline/fault-injection tests |
 | Discovery, telemetry, adapters (FAS, battery saver), AFID lookup, module inventory | `crates/zcore-platform` | Verified on fixtures. Evidence: 14 tests. **Unverified** on a device. |
 | Daemon and CLI | `crates/zcored` | Verified on the host. Evidence: 4 tests including an end-to-end socket test. **Unverified** on a device. |
-| Module packaging | `module/`, `scripts/build-android.sh`, `.cargo/config.toml` | Verified. Evidence: shellcheck clean; NDK r27d build with 16 KB-aligned LOAD segments (checked by the script), 2026-10-19 |
+| Android component | `scripts/build-android.sh`, `.cargo/config.toml` | Emits `dist/zairenkai-core/` (`bin/zcored`, licences, `component.json`); the root module is assembled in Zairenkai-Modules (maintainer decision 2026-10-22). The 16 KB LOAD-segment check is unchanged. **Unverified** with the NDK since this change |
 | CI | `.github/workflows/ci.yml` | Verified on GitHub. Evidence: Actions run 39528674638 (workflow_dispatch, 3562c7c), all 4 jobs green, 2026-10-21 |
 | Docs | `README.md`, `docs/` | Verified. Evidence: files present |
 
 ## Key facts
 
-- Core writes no kernel nodes and runs no shell. Its only actions are the FAS socket commands
-  and `cmd power set-mode`.
+- Core writes no kernel nodes and runs no shell. Its only actions are the FAS socket commands,
+  `cmd power set-mode` and `ztune apply` (Zairenkai-Tuning writes the scheduler/governor node,
+  not Core).
   Evidence: `crates/zcore-platform/src/{fas,power,exec}.rs`.
 - The FAS adapter needs the `enabled` and `default_profile` status fields, added on the FAS topic
   branch (commit `9d43894`); that change is not merged yet. **Unverified** against a deployed
@@ -56,13 +57,22 @@
 - `Zairenkai-ART`: Android Runtime. A read-only inspector (`zart`) exists on its topic branch
   `ccr-63f8aa87-1b0paj`, not merged; Core has no ART adapter. Verified. Evidence: ART
   `crates/zart`, 2026-10-19.
+- `Zairenkai-Tuning` (GPL-3.0): `tuning` adapter runs `ztune capabilities|telemetry|apply` and
+  owns `tuning.io_scheduler`, `tuning.gpu_governor` (read-only unless ztune reports an
+  exact-device write authorization); separate process, no shared code.
+  Verified. Evidence: `crates/zcore-platform/src/tuning.rs` tests against captured documents,
+  pipeline test `tuning_operations_go_through_policy_and_read_back`, 2026-10-22. **Unverified**
+  on a device.
 - `Zairenkai-ThermalTools`: read-only diagnostics through `zthermal snapshot` (schema 1),
   from a root-owned binary configured in `paths.thermaltools_binary`.
   Verified. Evidence: `crates/zcore-platform/src/thermaltools.rs` tests (fakes, a generated zthermal 0.2.0 snapshot) and one host run of the real binary, 2026-10-21.
   **Unverified** on a device.
-- SDK, License-Server, Intelligence-Engine, Graphics-Platform, Modules and App contained only
-  agent foundation files on 2026-10-19. Evidence: `git ls-tree origin/dev`. Their contracts
-  are in `docs/MODULES.md`.
+- `Zairenkai-Modules` packages zcored, zfasd and ztune into the single `zairenkai` module, and
+  `Zairenkai-App` reaches Core through `zcored ctl` over root. Verified. Evidence: Modules
+  `components.lock.json`, App `integration-core/.../core/Core.kt`, 2026-10-22.
+- SDK, License-Server, Intelligence-Engine and Graphics-Platform contained only agent foundation
+  files on 2026-10-22. Evidence: `git ls-tree origin/dev`. Their contracts are in
+  `docs/MODULES.md`.
 
 ## Open questions
 
