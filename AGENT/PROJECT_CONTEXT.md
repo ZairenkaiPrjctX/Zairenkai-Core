@@ -67,9 +67,12 @@
   from a root-owned binary configured in `paths.thermaltools_binary`.
   Verified. Evidence: `crates/zcore-platform/src/thermaltools.rs` tests (fakes, a generated zthermal 0.2.0 snapshot) and one host run of the real binary, 2026-10-21.
   **Unverified** on a device.
-- SDK, License-Server, Intelligence-Engine, Graphics-Platform, Modules and App contained only
-  agent foundation files on 2026-10-19. Evidence: `git ls-tree origin/dev`. Their contracts
-  are in `docs/MODULES.md`.
+- `Zairenkai-Modules` packages zcored, zfasd and ztune into the single `zairenkai` module, and
+  `Zairenkai-App` reaches Core through `zcored ctl` over root. Verified. Evidence: Modules
+  `components.lock.json`, App `integration-core/.../core/Core.kt`, 2026-10-22.
+- SDK, License-Server, Intelligence-Engine and Graphics-Platform contained only agent foundation
+  files on 2026-10-22. Evidence: `git ls-tree origin/dev`. Their contracts are in
+  `docs/MODULES.md`.
 
 ## Open questions
 
