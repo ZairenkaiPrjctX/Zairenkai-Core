@@ -1,6 +1,6 @@
 # Core IPC protocol, version 1
 
-- **Transport:** Unix stream socket `/data/adb/zairenkai-core/zcored.sock` (mode 0600, root
+- **Transport:** Unix stream socket `/data/adb/zairenkai/core/zcored.sock` (mode 0600, root
   only; see ADR-0005).
 - **Exchange:** one request line per connection, one response line back.
 - **Canonical schema:** `crates/zcore-domain/src/protocol.rs`.

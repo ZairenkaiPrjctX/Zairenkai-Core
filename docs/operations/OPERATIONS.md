@@ -7,8 +7,8 @@
 | Tests (unit, fault injection, end-to-end socket) | `cargo test --workspace` |
 | Lint | `cargo clippy --workspace --all-targets -- -D warnings && cargo fmt --all --check` |
 | MSRV | `cargo +1.85.0 test --workspace` |
-| Shell | `shellcheck -s sh module/*.sh module/META-INF/com/google/android/update-binary && shellcheck scripts/*.sh` |
-| Android module | `ANDROID_NDK_HOME=<ndk r27d> scripts/build-android.sh` → `dist/zairenkai-core-v<ver>.zip` |
+| Shell | `shellcheck scripts/*.sh` |
+| Android component | `ANDROID_NDK_HOME=<ndk r27d> scripts/build-android.sh` → `dist/zairenkai-core/` (packaged by Zairenkai-Modules) |
 | Hot-path cost (host) | `cargo run --release -p zcored -- bench 20000` |
 
 No test touches the host's `/sys`, `/proc` or Android services. Platform code runs against
@@ -16,13 +16,14 @@ No test touches the host's `/sys`, `/proc` or Android services. Platform code ru
 
 ## Install
 
-1. Flash the zip in Magisk, KernelSU or APatch. Requirements: arm64, API 29 or newer.
+1. Install the `zairenkai` module zip from Zairenkai-Modules in Magisk, KernelSU or APatch.
+   Requirements: arm64, API 29 or newer.
 2. Reboot. `service.sh` waits for boot completion, then supervises `zcored run`:
    - backoff from 5 s up to 300 s;
-   - after 5 starts in 10 minutes it gives up and writes `/data/adb/zairenkai-core/failed`.
-3. Start with the read-only report: `su -c /data/adb/modules/zairenkai_core/bin/zcored discover`.
+   - after 5 starts in 10 minutes it gives up and writes `/data/adb/zairenkai/core/failed`.
+3. Start with the read-only report: `su -c /data/adb/modules/zairenkai/bin/zcored discover`.
 
-## Files (`/data/adb/zairenkai-core`, mode 0700)
+## Files (`/data/adb/zairenkai/core`, mode 0700)
 
 | File | Content |
 |---|---|

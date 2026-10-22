@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: Apache-2.0
 # Copyright 2026 ZairenkaiPrjctX contributors
-# Build zcored for Android arm64 and package the Magisk/KernelSU module zip.
+# Build zcored for Android arm64 as a component of the unified zairenkai module.
 #
 # Requires: Rust with the aarch64-linux-android target, and ANDROID_NDK_HOME pointing at an
-# Android NDK (CI uses r27d, checksum-verified). Output: dist/zairenkai-core-v<version>.zip
+# Android NDK (CI uses r27d, checksum-verified). Output: dist/zairenkai-core/, the files
+# Zairenkai-Modules assembles into the module (bin/zcored, licences, component.json). The
+# module scripts and zip belong to Zairenkai-Modules.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -21,24 +23,32 @@ for align in $("$(dirname "$LINKER")/llvm-readelf" -lW target/aarch64-linux-andr
 done
 
 VERSION=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -n1)
-IFS=. read -r MAJ MIN PAT <<<"$VERSION"
-VERSION_CODE=$(( MAJ * 10000 + MIN * 100 + PAT ))
+COMMIT=$(git rev-parse HEAD)
+OUT=dist/zairenkai-core
+rm -rf "$OUT"
+mkdir -p "$OUT/bin"
+cp target/aarch64-linux-android/release/zcored "$OUT/bin/zcored"
+chmod 0755 "$OUT/bin/zcored"
+cp LICENSE NOTICE "$OUT/"
+cp docs/THIRD_PARTY.md "$OUT/THIRD_PARTY.md"
 
-STAGE=$(mktemp -d)
-trap 'rm -rf "$STAGE"' EXIT
-cp -r module/. "$STAGE/"
-rm -f "$STAGE/module.prop.in"
-sed -e "s/@VERSION@/$VERSION/" -e "s/@VERSION_CODE@/$VERSION_CODE/" module/module.prop.in >"$STAGE/module.prop"
-mkdir -p "$STAGE/bin"
-cp target/aarch64-linux-android/release/zcored "$STAGE/bin/zcored"
-cp LICENSE NOTICE "$STAGE/"
-cp docs/THIRD_PARTY.md "$STAGE/THIRD_PARTY.md"
-chmod 0755 "$STAGE"/*.sh "$STAGE/bin/zcored" "$STAGE/META-INF/com/google/android/update-binary"
-
-mkdir -p dist
-OUT="dist/zairenkai-core-v${VERSION}.zip"
-rm -f "$OUT"
-# Fixed timestamps and order for a reproducible archive.
-find "$STAGE" -exec touch -h -d '2000-01-01T00:00:00Z' {} +
-(cd "$STAGE" && find . -type f | LC_ALL=C sort | sed 's|^\./||' | zip -X -q -@ "$OLDPWD/$OUT")
-sha256sum "$OUT" | tee "$OUT.sha256"
+# component.json: what Zairenkai-Modules checks before packaging (format 1).
+files=""
+for f in bin/zcored LICENSE NOTICE THIRD_PARTY.md; do
+  files="$files${files:+,}
+    \"$f\": \"$(sha256sum "$OUT/$f" | cut -d' ' -f1)\""
+done
+cat >"$OUT/component.json" <<JSON
+{
+  "format": 1,
+  "component": "zairenkai-core",
+  "repository": "ZairenkaiPrjctX/Zairenkai-Core",
+  "version": "$VERSION",
+  "commit": "$COMMIT",
+  "target": "aarch64-linux-android",
+  "min_api": $API,
+  "files": {$files
+  }
+}
+JSON
+cat "$OUT/component.json"

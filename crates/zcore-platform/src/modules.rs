@@ -10,6 +10,10 @@ use zcore_domain::module::{ModuleDescriptor, ModuleHealth, ModuleManifest, Versi
 use crate::sysroot::SysRoot;
 
 pub const MODULES_DIR: &str = "/data/adb/modules";
+/// The single Zairenkai root module (Zairenkai-Modules): zcored, and zfasd when packaged.
+pub const UNIFIED_ID: &str = "zairenkai";
+/// Data directory shared by the unified module's components (`core/`, `fas/`).
+pub const DATA_DIR: &str = "/data/adb/zairenkai";
 pub const MANIFEST: &str = "zairenkai-module.toml";
 const MAX_FILE: u64 = 64 * 1024;
 

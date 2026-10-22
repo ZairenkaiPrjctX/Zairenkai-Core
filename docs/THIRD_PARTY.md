@@ -11,8 +11,8 @@ repository and for Zairenkai-ThermalTools.
 - Cargo metadata: `license = "Apache-2.0"` for every crate.
 - Every `.rs` and shell file starts with `SPDX-License-Identifier: Apache-2.0` and the
   copyright line.
-- The module zip built by `scripts/build-android.sh` contains `LICENSE`, `NOTICE` and this
-  file.
+- The component built by `scripts/build-android.sh` (`dist/zairenkai-core/`) contains
+  `LICENSE`, `NOTICE` and this file; Zairenkai-Modules carries them into the module zip.
 
 Every commit is the maintainer's work. Agent-made commits carry the maintainer's
 `Signed-off-by`, and no third-party code is vendored.
@@ -51,5 +51,4 @@ copies here are under Apache-2.0. Licensing FAS is a separate decision.
 See `architecture/REFERENCE_AUDIT.md`. No code was copied from KernelSU, KernelSU-Next, AOSP,
 Cedar, OPA, the OpenTelemetry Collector, systemd or Linux.
 
-`module/META-INF/com/google/android/update-binary` is an independently written stub. It calls
-Magisk's documented installer interface (`util_functions.sh`, `install_module`).
+The Magisk `update-binary` stub moved to Zairenkai-Modules with the other module scripts.

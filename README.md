@@ -28,12 +28,12 @@ free-form command operation.
 
 ```sh
 cargo test --workspace
-ANDROID_NDK_HOME=/path/to/android-ndk-r27d scripts/build-android.sh   # dist/zairenkai-core-v*.zip
+ANDROID_NDK_HOME=/path/to/android-ndk-r27d scripts/build-android.sh   # dist/zairenkai-core/ (component)
 
 # on a rooted device, after installing the module:
-su -c /data/adb/modules/zairenkai_core/bin/zcored discover          # read-only report
-su -c /data/adb/modules/zairenkai_core/bin/zcored ctl health
-su -c '/data/adb/modules/zairenkai_core/bin/zcored ctl submit "{\"operation\":{\"op\":\"fas_set_profile\",\"profile\":\"performance\"},\"dry_run\":true}"'
+su -c /data/adb/modules/zairenkai/bin/zcored discover          # read-only report
+su -c /data/adb/modules/zairenkai/bin/zcored ctl health
+su -c '/data/adb/modules/zairenkai/bin/zcored ctl submit "{\"operation\":{\"op\":\"fas_set_profile\",\"profile\":\"performance\"},\"dry_run\":true}"'
 ```
 
 ## Documentation

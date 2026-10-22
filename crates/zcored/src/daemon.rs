@@ -23,7 +23,7 @@ use crate::ratelimit::RateLimiter;
 use crate::server::{self, Shared, MAX_CONNECTIONS};
 use crate::util::{lock_instance, monotonic_ms};
 
-pub const DEFAULT_DIR: &str = "/data/adb/zairenkai-core";
+pub const DEFAULT_DIR: &str = "/data/adb/zairenkai/core";
 /// The engine heartbeat may be at most this old.
 pub const WATCHDOG_MS: u64 = 90_000;
 
@@ -247,11 +247,17 @@ mod tests {
         d.file("sys/class/power_supply/battery/status", "Discharging");
         d.file("proc/meminfo", "MemAvailable: 1000 kB\n");
         d.file(
+            "data/adb/modules/zairenkai/module.prop",
+            "id=zairenkai\nversion=v0.1.0\n",
+        );
+        d.file("data/adb/modules/zairenkai/bin/zfasd", "");
+        // A leftover separate module from before the unified one.
+        d.file(
             "data/adb/modules/zairenkai_fas/module.prop",
             "id=zairenkai_fas\nversion=v0.1.0\n",
         );
-        std::fs::create_dir_all(d.path().join("data/adb/zairenkai-fas")).unwrap();
-        fake_zfasd(d.path().join("data/adb/zairenkai-fas/zfasd.sock"));
+        std::fs::create_dir_all(d.path().join("data/adb/zairenkai/fas")).unwrap();
+        fake_zfasd(d.path().join("data/adb/zairenkai/fas/zfasd.sock"));
         // SAFETY: getuid has no preconditions.
         let uid = unsafe { libc::getuid() };
         let principals = if uid == 0 {
@@ -364,14 +370,26 @@ mod tests {
             "unsupported_version"
         );
         let mods = call(&sock, r#"{"v":1,"id":"m1","method":"modules"}"#);
-        let fas = mods["result"]
+        let module = |id: &str| {
+            mods["result"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|m| m["id"] == id)
+                .unwrap()
+                .clone()
+        };
+        let unified = module("zairenkai");
+        assert_eq!(unified["health"], "healthy", "{unified}");
+        assert_eq!(unified["detail"], "zcored answering; zfasd controllable");
+        let old = module("zairenkai_fas");
+        assert_eq!(old["health"], "degraded", "{old}");
+        assert!(old["detail"].as_str().unwrap().contains("superseded"));
+        assert!(!mods["result"]
             .as_array()
             .unwrap()
             .iter()
-            .find(|m| m["id"] == "zairenkai_fas")
-            .unwrap()
-            .clone();
-        assert_eq!(fas["health"], "healthy");
+            .any(|m| m["id"] == "zairenkai_modules"));
         assert!(mods["result"]
             .as_array()
             .unwrap()

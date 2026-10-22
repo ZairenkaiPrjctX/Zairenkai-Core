@@ -130,11 +130,7 @@ fn discover() -> i32 {
         cfg.telemetry.max_context_age_ms,
     );
     let mut caps = zcore_platform::telemetry::capabilities(&telemetry, now);
-    let marker = format!(
-        "{}/{}",
-        zcore_platform::modules::MODULES_DIR,
-        zcore_platform::fas::MODULE_ID
-    );
+    let marker = zcore_platform::fas::module_marker(zcore_platform::modules::MODULES_DIR);
     let root = p.root.clone();
     let mut fas = zcore_platform::fas::FasAdapter::new(
         zcore_platform::fas::DEFAULT_SOCKET,
