@@ -35,6 +35,25 @@ No test touches the host's `/sys`, `/proc` or Android services. Platform code ru
 | `zcored.lock` | Single-instance lock |
 | `failed` | Present when the supervisor gave up |
 
+## Zairenkai-Tuning (I/O scheduler, GPU governor, telemetry)
+
+The unified module installs `ztune` at `/data/adb/modules/zairenkai/bin/ztune`, which Core
+uses by default. Another location can be configured:
+
+```toml
+[paths]
+tuning_binary = "/data/adb/modules/zairenkai/bin/ztune"
+```
+
+The same ownership rules as for `zthermal` apply (named `ztune`, root-owned, not group- or
+world-writable up to `/`). Core runs only `ztune capabilities`, `ztune telemetry
+--interval-ms 200` and `ztune apply <io.scheduler|gpu.governor> <value>`, each with a 5 s
+timeout and a 1 MiB output cap. It never runs `ztune restore` or `ztune gpu-table`. Without the
+binary the two controls are `unsupported` and `health` stays `ready`.
+
+`ztune` is GPL-3.0 and a separate program: Core links none of its code and only reads its
+documented JSON contract (Zairenkai-Tuning `docs/LICENSING.md`).
+
 ## Optional: ThermalTools diagnostics
 
 Core reports `thermaltools.diagnostics` and `thermaltools.sensors` when a `zthermal` binary

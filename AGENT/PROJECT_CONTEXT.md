@@ -29,8 +29,9 @@
 
 ## Key facts
 
-- Core writes no kernel nodes and runs no shell. Its only actions are the FAS socket commands
-  and `cmd power set-mode`.
+- Core writes no kernel nodes and runs no shell. Its only actions are the FAS socket commands,
+  `cmd power set-mode` and `ztune apply` (Zairenkai-Tuning writes the scheduler/governor node,
+  not Core).
   Evidence: `crates/zcore-platform/src/{fas,power,exec}.rs`.
 - The FAS adapter needs the `enabled` and `default_profile` status fields, added on the FAS topic
   branch (commit `9d43894`); that change is not merged yet. **Unverified** against a deployed
@@ -56,6 +57,11 @@
 - `Zairenkai-ART`: Android Runtime. A read-only inspector (`zart`) exists on its topic branch
   `ccr-63f8aa87-1b0paj`, not merged; Core has no ART adapter. Verified. Evidence: ART
   `crates/zart`, 2026-10-19.
+- `Zairenkai-Tuning` (GPL-3.0): `tuning` adapter runs `ztune capabilities|telemetry|apply` and
+  owns `tuning.io_scheduler`, `tuning.gpu_governor`; separate process, no shared code.
+  Verified. Evidence: `crates/zcore-platform/src/tuning.rs` tests against captured documents,
+  pipeline test `tuning_operations_go_through_policy_and_read_back`, 2026-10-22. **Unverified**
+  on a device.
 - `Zairenkai-ThermalTools`: read-only diagnostics through `zthermal snapshot` (schema 1),
   from a root-owned binary configured in `paths.thermaltools_binary`.
   Verified. Evidence: `crates/zcore-platform/src/thermaltools.rs` tests (fakes, a generated zthermal 0.2.0 snapshot) and one host run of the real binary, 2026-10-21.

@@ -5,6 +5,7 @@
 //! commands through the allowlisted [`exec::Runner`], so tests never touch the host.
 
 pub mod afid;
+pub mod component;
 pub mod discovery;
 pub mod exec;
 pub mod fas;
@@ -15,3 +16,4 @@ pub mod sysroot;
 pub mod telemetry;
 pub mod testutil;
 pub mod thermaltools;
+pub mod tuning;

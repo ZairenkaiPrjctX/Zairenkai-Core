@@ -166,11 +166,12 @@ impl Default for CoreConfig {
     }
 }
 
-pub const KNOWN_PATHS: [&str; 4] = [
+pub const KNOWN_PATHS: [&str; 5] = [
     "fas_socket",
     "afid_catalog",
     "modules_dir",
     "thermaltools_binary",
+    "tuning_binary",
 ];
 
 impl CoreConfig {

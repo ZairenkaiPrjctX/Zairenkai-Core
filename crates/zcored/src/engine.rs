@@ -23,6 +23,7 @@ use zcore_domain::observation::{Availability, Observation};
 use zcore_domain::principal::Principal;
 use zcore_domain::protocol::{ErrorCode, Method, Request, Response};
 use zcore_domain::request::{ActionRequest, Origin};
+use zcore_domain::resource::ResourceId;
 use zcore_engine::adapter::Adapter;
 use zcore_engine::config::CoreConfig;
 use zcore_engine::Core;
@@ -31,6 +32,7 @@ use zcore_platform::exec::Runner;
 use zcore_platform::fas::{self, FasAdapter};
 use zcore_platform::power::LowPowerAdapter;
 use zcore_platform::sysroot::SysRoot;
+use zcore_platform::tuning::{self, TuningAdapter};
 use zcore_platform::{discovery, modules, telemetry, thermaltools};
 
 use crate::storage::{self, AuditSink};
@@ -81,6 +83,8 @@ struct Engine {
     core: Core,
     opts: EngineOptions,
     fas_probe: FasAdapter,
+    /// Reads `ztune telemetry`; the adapter Core owns handles the resources.
+    tuning_probe: TuningAdapter,
     knowledge: Lookup,
     started_ms: u64,
     sink: AuditSink,
@@ -93,6 +97,14 @@ fn fas_socket(cfg: &CoreConfig) -> String {
 
 fn modules_dir(cfg: &CoreConfig) -> String {
     cfg.path("modules_dir", modules::MODULES_DIR)
+}
+
+fn tuning_adapter(p: &Platform, cfg: &CoreConfig) -> TuningAdapter {
+    TuningAdapter::new(
+        p.root.clone(),
+        p.runner.clone(),
+        cfg.paths.get(tuning::PATH_KEY).map(String::as_str),
+    )
 }
 
 fn fas_adapter(p: &Platform, cfg: &CoreConfig) -> FasAdapter {
@@ -113,6 +125,7 @@ impl Engine {
         let adapters: Vec<Box<dyn Adapter>> = vec![
             Box::new(fas_adapter(&p, &opts.config)),
             Box::new(LowPowerAdapter::new(p.runner.clone(), api)),
+            Box::new(tuning_adapter(&p, &opts.config)),
         ];
         let mut core = Core::new(opts.config.clone(), adapters);
         let mut ctx = DeviceContext::unknown();
@@ -121,6 +134,7 @@ impl Engine {
         let sink = AuditSink::new(opts.dir.join("audit.jsonl"));
         let mut e = Engine {
             fas_probe: fas_adapter(&p, &opts.config),
+            tuning_probe: tuning_adapter(&p, &opts.config),
             core,
             knowledge: Lookup::NoCatalog,
             started_ms: now,
@@ -345,7 +359,12 @@ impl Engine {
             reasons.push(format!("device context is {age} ms old"));
         }
         for (r, st) in self.core.controllable() {
-            if st != CapabilityStatus::ReadWrite {
+            // Tuning targets are optional hardware: a device without a GPU devfreq node or a
+            // selectable I/O scheduler is not degraded, it just lacks that control.
+            let optional = matches!(r, ResourceId::IoScheduler | ResourceId::GpuGovernor);
+            if st != CapabilityStatus::ReadWrite
+                && !(optional && st == CapabilityStatus::Unsupported)
+            {
                 reasons.push(format!("{} is {st:?}", r.as_str()));
             }
         }
@@ -393,6 +412,14 @@ impl Engine {
                 json!({ "context": self.core.context(), "knowledge": self.knowledge }),
             ),
             Method::Modules => Response::ok(&req.id, to_json(&self.core.modules().to_vec())),
+            Method::Tuning => match self.tuning_probe.telemetry() {
+                Ok(doc) => Response::ok(&req.id, doc),
+                Err(e) => Response::err(
+                    &req.id,
+                    ErrorCode::NotFound,
+                    format!("Zairenkai-Tuning telemetry: {e}"),
+                ),
+            },
             Method::Leases => Response::ok(&req.id, to_json(&self.core.leases().all().to_vec())),
             Method::Policy => {
                 let c = self.core.policy().config();

@@ -31,6 +31,7 @@ The caller's identity is the socket peer uid (`SO_PEERCRED`), mapped by configur
 | `capabilities` | – | `CapabilityDescriptor[]`: `id`, `status`, `owner`, `evidence`, `verified_on_device`, `checked_at_ms` |
 | `context` | – | `{context: DeviceContext, knowledge: Lookup}`. Every field is an `Observation` (see below). |
 | `modules` | – | `ModuleDescriptor[]`: installed Zairenkai modules, plus first-party components reported as `not_installed` |
+| `tuning` | – | The Zairenkai-Tuning telemetry document (`zairenkai.tuning` schema 1, `kind: "telemetry"`), as `ztune telemetry --interval-ms 200` printed it after Core checked its schema, version, kind and component. Fields: Zairenkai-Tuning `docs/CONTRACT.md`. `not_found` when `ztune` is missing or fails |
 | `leases` | – | `ResourceLease[]` |
 | `policy` | – | `version`, `safety`, `root_grants`, `principals`, `rules` |
 | `audit` | `{limit: 1..=500}` (default 50) | `AuditEvent[]`, oldest first |
@@ -51,7 +52,15 @@ An `Observation` has these fields:
 {"op": "fas_set_profile", "profile": "power_saver|balanced|performance|fast_response|adaptive"}
 {"op": "fas_set_enabled", "enabled": true}
 {"op": "set_low_power_mode", "enabled": true}
+{"op": "tuning_set_io_scheduler", "scheduler": "mq-deadline|kyber|bfq|none|cfq|deadline|noop"}
+{"op": "tuning_set_gpu_governor", "governor": "msm-adreno-tz|simple_ondemand|performance|powersave"}
 ```
+
+The tuning operations are carried out by Zairenkai-Tuning's `ztune` (a separate GPL-3.0
+program in the module); the device must also advertise the value, which the capability
+evidence lists. `tuning_set_gpu_governor` to a higher-demand governor is a raising action
+(thermal, battery and staleness rules apply); `performance` is risk `high`. The I/O scheduler
+is neutral.
 
 There is no generic or free-form operation.
 
