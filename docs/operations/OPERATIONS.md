@@ -45,8 +45,11 @@ uses by default. Another location can be configured:
 tuning_binary = "/data/adb/modules/zairenkai/bin/ztune"
 ```
 
-The same ownership rules as for `zthermal` apply (named `ztune`, root-owned, not group- or
-world-writable up to `/`). Core runs only `ztune capabilities`, `ztune telemetry
+Core uses this module-managed path by default. A configured alternative must stay below
+`/data/adb`; every directory from `/data/adb` down to the binary must be root-owned and not
+group- or world-writable. Android's `/data` uses its platform ownership policy rather than being
+incorrectly required to be root-owned. Core rejects paths outside `/data/adb`. It runs only
+`ztune capabilities`, `ztune telemetry
 --interval-ms 200` and `ztune apply <io.scheduler|gpu.governor> <value>`, each with a 5 s
 timeout and a 1 MiB output cap. It never runs `ztune restore` or `ztune gpu-table`. Without the
 binary the two controls are `unsupported` and `health` stays `ready`. With the binary but no
@@ -65,8 +68,12 @@ is configured:
 thermaltools_binary = "/data/adb/zairenkai/bin/zthermal"
 ```
 
-The file must be named `zthermal`, executable, owned by root, and neither it nor any
-directory above it may be group- or world-writable (`/data/local/tmp` does not qualify).
+The file must be named `zthermal` and executable. The configured path must remain under
+`/data/adb`, and the binary plus each directory from `/data/adb` down must be root-owned and not
+group- or world-writable. Android's
+platform-managed `/data` is checked with its own ownership/permission policy; arbitrary writable
+locations such as `/data/local/tmp` are never accepted. Custom paths are allowed only below
+`/data/adb` and must pass the same ownership/permission checks.
 Core runs only `zthermal snapshot` (read-only, redacted), with a 5 s timeout and a 1 MiB
 output cap. Without the setting, or when a check fails, ThermalTools is reported as not
 installed and the reason is in `zcored ctl modules`.

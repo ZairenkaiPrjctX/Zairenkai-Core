@@ -12,7 +12,7 @@
 //! - runs only `capabilities`, `telemetry` and `apply <op> <value>`, with typed values from
 //!   [`IoScheduler`] and [`GpuGovernor`]; `restore`, `gpu-table` and anything else are never
 //!   run by Core;
-//! - runs only a root-owned binary that is not group- or world-writable;
+//! - runs only the module-managed binary after a path-specific ownership/permission check;
 //! - bounds time and output, and checks the schema, version, kind and component;
 //! - reads the resource back through `capabilities` so Core verifies independently of the
 //!   result `ztune` reports.

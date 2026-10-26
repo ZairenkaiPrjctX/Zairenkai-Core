@@ -130,8 +130,8 @@ pub struct ThermalToolsReport {
     pub capabilities: Vec<ToolCapability>,
 }
 
-/// Checks the configured path before anything runs. `owner_uid` is the uid every path
-/// component must belong to: 0 in production (Core runs as root).
+/// Checks the configured module binary before anything runs. `owner_uid` applies to the
+/// trusted module subtree; Android-managed ancestors use the path-specific policy in `component`.
 pub fn check_binary(root: &SysRoot, path: &str, owner_uid: u32) -> Result<(), ThermalToolsError> {
     component::check_binary(root, path, BINARY_NAME, owner_uid).map_err(|e| match e {
         BinaryError::NotInstalled(m) => ThermalToolsError::NotInstalled(m),
@@ -218,7 +218,7 @@ pub fn parse_snapshot(text: &str) -> Result<ThermalToolsReport, ThermalToolsErro
     })
 }
 
-/// Runs one read-only query against the configured binary, which must be root-owned.
+/// Runs one read-only query against the configured, validated module binary.
 pub fn run(
     root: &SysRoot,
     runner: &dyn Runner,
@@ -335,7 +335,7 @@ mod tests {
         "capabilities": [{"id": "sensors.thermal_zones", "state": "AVAILABLE_READ_ONLY"},
                          {"id": "control.thermal_policy", "state": "UNSUPPORTED"}]}"#;
 
-    /// A root-owned, non-writable binary inside a fixture root (tests run as root).
+    /// A non-writable binary inside a fixture root with ownership accepted by the test SysRoot.
     fn install() -> TempDir {
         let d = TempDir::new("tt");
         d.file("data/adb/zairenkai/bin/zthermal", "#!/bin/false\n");
