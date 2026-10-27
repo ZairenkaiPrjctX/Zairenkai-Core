@@ -48,7 +48,10 @@ pub fn check_binary(
     owner_uid: u32,
 ) -> Result<(), BinaryError> {
     if !path.starts_with('/')
-        || path.split('/').skip(1).any(|c| c.is_empty() || c == ".." || c == ".")
+        || path
+            .split('/')
+            .skip(1)
+            .any(|c| c.is_empty() || c == ".." || c == ".")
     {
         return unsafe_path(format!("{path:?} is not a normalized absolute path"));
     }
@@ -63,7 +66,9 @@ pub fn check_binary(
         return unsafe_path(format!("{name:?} is not an approved component"));
     }
     if !path.starts_with(&format!("{ROOT_MANAGER_DIR}/")) {
-        return unsafe_path(format!("{path:?} is outside the protected {ROOT_MANAGER_DIR} tree"));
+        return unsafe_path(format!(
+            "{path:?} is outside the protected {ROOT_MANAGER_DIR} tree"
+        ));
     }
     let trusted_root = PathBuf::from(ROOT_MANAGER_DIR);
 
@@ -73,10 +78,14 @@ pub fn check_binary(
         Err(e) => return Err(BinaryError::NotInstalled(format!("{path}: {e}"))),
     };
     if file_meta.file_type().is_symlink() || !file_meta.file_type().is_file() {
-        return Err(BinaryError::NotInstalled(format!("{path} is not a regular, non-symlink file")));
+        return Err(BinaryError::NotInstalled(format!(
+            "{path} is not a regular, non-symlink file"
+        )));
     }
     if file_meta.mode() & 0o111 == 0 {
-        return Err(BinaryError::NotInstalled(format!("{path} is not executable")));
+        return Err(BinaryError::NotInstalled(format!(
+            "{path} is not executable"
+        )));
     }
 
     let mut logical = PathBuf::from(path);
@@ -97,11 +106,15 @@ pub fn check_binary(
             if meta.uid() != owner_uid {
                 return unsafe_path(format!(
                     "{} is owned by uid {}, not {owner_uid}",
-                    logical.display(), meta.uid()
+                    logical.display(),
+                    meta.uid()
                 ));
             }
             if mode & 0o022 != 0 {
-                return unsafe_path(format!("{} is writable by group or others", logical.display()));
+                return unsafe_path(format!(
+                    "{} is writable by group or others",
+                    logical.display()
+                ));
             }
         } else if logical == Path::new("/data") {
             // Test SysRoots live beneath a temporary host directory whose owner is the test user.
@@ -114,7 +127,9 @@ pub fn check_binary(
             if !acceptable {
                 return unsafe_path(format!(
                     "/data has unacceptable Android ownership/permissions (uid {}, gid {}, mode {:04o})",
-                    meta.uid(), meta.gid(), mode & 0o7777
+                    meta.uid(),
+                    meta.gid(),
+                    mode & 0o7777
                 ));
             }
         } else {
@@ -124,18 +139,25 @@ pub fn check_binary(
             if meta.uid() != expected_owner {
                 return unsafe_path(format!(
                     "{} is owned by uid {}, not {expected_owner}",
-                    logical.display(), meta.uid()
+                    logical.display(),
+                    meta.uid()
                 ));
             }
             if mode & 0o022 != 0 {
-                return unsafe_path(format!("{} is writable by group or others", logical.display()));
+                return unsafe_path(format!(
+                    "{} is writable by group or others",
+                    logical.display()
+                ));
             }
         }
 
         if logical == Path::new("/") {
             break;
         }
-        logical = logical.parent().expect("non-root absolute path has a parent").to_path_buf();
+        logical = logical
+            .parent()
+            .expect("non-root absolute path has a parent")
+            .to_path_buf();
     }
     Ok(())
 }
@@ -162,7 +184,9 @@ mod tests {
         let mut dir = file.parent().map(Path::to_path_buf);
         while let Some(p) = dir {
             std::fs::set_permissions(&p, std::fs::Permissions::from_mode(0o755)).unwrap();
-            if p == d.path() { break; }
+            if p == d.path() {
+                break;
+            }
             dir = p.parent().map(Path::to_path_buf);
         }
         d
@@ -171,7 +195,10 @@ mod tests {
     #[test]
     fn accepts_root_owned_module_binary_under_virtual_sysroot() {
         let d = installed();
-        assert_eq!(check_binary(&SysRoot::at(d.path()), BIN, "ztune", me()), Ok(()));
+        assert_eq!(
+            check_binary(&SysRoot::at(d.path()), BIN, "ztune", me()),
+            Ok(())
+        );
     }
 
     #[test]
@@ -183,17 +210,27 @@ mod tests {
         let mut dir = file.parent().map(Path::to_path_buf);
         while let Some(p) = dir {
             std::fs::set_permissions(&p, std::fs::Permissions::from_mode(0o755)).unwrap();
-            if p == d.path() { break; }
+            if p == d.path() {
+                break;
+            }
             dir = p.parent().map(Path::to_path_buf);
         }
-        assert_eq!(check_binary(&SysRoot::at(d.path()), THERMALTOOLS_BIN, "zthermal", me()), Ok(()));
+        assert_eq!(
+            check_binary(&SysRoot::at(d.path()), THERMALTOOLS_BIN, "zthermal", me()),
+            Ok(())
+        );
     }
 
     #[test]
     fn refuses_binary_outside_the_module_bin_directory() {
         let d = installed();
         assert!(matches!(
-            check_binary(&SysRoot::at(d.path()), "/data/local/tmp/ztune", "ztune", me()),
+            check_binary(
+                &SysRoot::at(d.path()),
+                "/data/local/tmp/ztune",
+                "ztune",
+                me()
+            ),
             Err(BinaryError::Unsafe(_))
         ));
     }
