@@ -166,7 +166,7 @@ pub fn check_binary(
 mod tests {
     use super::*;
     use crate::testutil::TempDir;
-    use std::os::unix::fs::{symlink, PermissionsExt};
+    use std::os::unix::fs::PermissionsExt;
 
     const BIN: &str = "/data/adb/modules/zairenkai/bin/ztune";
     const THERMALTOOLS_BIN: &str = "/data/adb/zairenkai/bin/zthermal";
